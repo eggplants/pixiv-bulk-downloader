@@ -60,17 +60,22 @@ def download(aapi, bookmarked_data, save_dir="./pixivpy/my_bookmarks"):
     os.makedirs(save_dir, exist_ok=True)
     bookmark_len = len(bookmarked_data)
     for idx, image_data in enumerate(bookmarked_data):
-        print(
-            "[{}/{}]: {}({})".format(
-                idx + 1, bookmark_len,
-                image_data["title"], image_data["id"]))
-        if type(image_data["link"]) is list:
-            for image_url in image_data["link"]:
-                print(image_url.split("/")[-1], end="\r")
-                aapi.download(image_url, path=save_dir)
+        title, id_ = image_data["title"], image_data["id"]
+        link = image_data["link"]
+        print("[{}/{}]: {}({})".format(idx + 1, bookmark_len, title, id_))
+        if type(link) is list:
+            for _ in link:
+                basename_ = _.split("/")[-1]
+                print(basename_, end="\r")
+                aapi.download(_, path=save_dir,
+                              fname='{}_{}_{}'.format(
+                                  id_, title, basename_.split("_")[-1]))
         else:
-            print(image_data["link"].split("/")[-1], end="\r")
-            aapi.download(image_data["link"], path=save_dir)
+            basename_ = link.split("/")[-1]
+            print(basename_, end="\r")
+            aapi.download(link, path=save_dir,
+                          fname='{}_{}_{}'.format(
+                              id_, title, basename_.split("_")[-1]))
 
 
 if __name__ == '__main__':
