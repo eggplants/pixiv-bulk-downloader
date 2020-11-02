@@ -4,31 +4,32 @@ from getpass import getpass
 
 from pixivpy3 import AppPixivAPI, PixivAPI
 
-"""client.json
+'''client.json
 {
-  "pixiv_id" : "<change this>",
-  "password" : "<change this>"
+  'pixiv_id' : '<change this>',
+  'password' : '<change this>'
 }
-"""
+'''
 
 
-def auth(api):
-    login_cred = (json.load(open("client.json", "r"))
-                  if os.path.exists("client.json") else '')
-    # login with account info json file
+def auth():
+    login_cred = (json.load(open('client.json', 'r'))
+                  if os.path.exists('client.json') else '')
+    api = PixivAPI()
+    api.hosts = 'https://app-api.pixiv.net'
     if login_cred != '':
         login_info = api.login(
-            login_cred["pixiv_id"], login_cred["password"])
+            login_cred['pixiv_id'], login_cred['password'])
         aapi = AppPixivAPI()
-        aapi.login(login_cred["pixiv_id"], login_cred["password"])
+        aapi.login(login_cred['pixiv_id'], login_cred['password'])
     else:
-        print("[+]ID is mail address, userid, account name.")
-        stdin_login = (input("[+]ID: "), getpass("[+]Password: "))
+        print('[+]ID is mail address, userid, account name.')
+        stdin_login = (input('[+]ID: '), getpass('[+]Password: '))
         login_info = api.login(stdin_login[0], stdin_login[1])
         aapi = AppPixivAPI()
         aapi.login(stdin_login[0], stdin_login[1])
 
-    return (aapi, login_info)
+    return (api, aapi, login_info)
 
 
 def retrieve_bookmarks(api, login_info):
@@ -38,49 +39,104 @@ def retrieve_bookmarks(api, login_info):
             'original_image_url', illust.image_urls.large)
         return (links if links != [] else link)
 
-    urls, next, target_id = [], "", login_info.response.user.id
+    urls, next, target_id = [], '', login_info.response.user.id
     while True:
         # pagenation
         res_json = (api.user_bookmarks_illust(target_id)
-                    if next == "" else api.user_bookmarks_illust(**next))
+                    if next == '' else api.user_bookmarks_illust(**next))
         urls.extend([
             {
-                "id": illust.id,
-                "title": illust.title,
-                "link": ext_links(illust)}
-            for illust in res_json["illusts"]])
-        next = api.parse_qs(res_json["next_url"])
+                'id': illust.id,
+                'title': illust.title,
+                'link': ext_links(illust)}
+            for illust in res_json['illusts']])
+        next = api.parse_qs(res_json['next_url'])
         if not next:
             break
 
     return urls
 
 
-def download(aapi, bookmarked_data, save_dir="./pixivpy/my_bookmarks"):
+def retrieve_works(api, id_):
+    def ext_links(illust):
+        links = [page.image_urls.original for page in illust.meta_pages]
+        link = illust.meta_single_page.get(
+            'original_image_url', illust.image_urls.large)
+        return (links if links != [] else link)
+
+    # pagenation
+    urls, next, target_id = [], '', id_
+    while True:
+        # pagenation
+        res_json = (api.user_illusts(target_id, type='illust')
+                    if next == '' else api.user_illusts(**next))
+        urls.extend([
+            {
+                'id': illust.id,
+                'title': illust.title,
+                'link': ext_links(illust)}
+            for illust in res_json['illusts']])
+        next = api.parse_qs(res_json['next_url'])
+        if not next:
+            break
+
+    return urls
+
+
+def retrieve_following(api, login_info):
+    users = []
+    res_json = api.user_following(login_info.response.user.id)
+    for user in res_json.user_previews:
+        user_info = user.user
+        users.append({
+            "id": user_info.id,
+            "name": user_info.name,
+            "account": user_info.account,
+            "illusts": retrieve_works(api, user_info.id)
+        })
+    return users
+
+
+def download(api, data, save_dir='./pixivpy'):
     os.makedirs(save_dir, exist_ok=True)
-    bookmark_len = len(bookmarked_data)
-    for idx, image_data in enumerate(bookmarked_data):
-        title, id_ = image_data["title"], image_data["id"]
-        link = image_data["link"]
-        print("[{}/{}]: {}({})".format(idx + 1, bookmark_len, title, id_))
+    data_len = len(data)
+    for idx, image_data in enumerate(data):
+        title, id_ = image_data['title'], image_data['id']
+        link = image_data['link']
+        print('[{}/{}]: {}({})'.format(idx + 1, data_len, title, id_))
         if type(link) is list:
             for _ in link:
-                basename_ = _.split("/")[-1]
+                basename_ = _.split('/')[-1]
                 print(basename_, end="\r")
-                aapi.download(_, path=save_dir,
-                              fname='{}_{}_{}'.format(
-                                  id_, title, basename_.split("_")[-1]))
+                api.download(_, path=save_dir,
+                             fname='{}_{}_{}'.format(
+                                 id_, title, basename_.split('_')[-1]))
         else:
-            basename_ = link.split("/")[-1]
+            basename_ = link.split('/')[-1]
             print(basename_, end="\r")
-            aapi.download(link, path=save_dir,
-                          fname='{}_{}_{}'.format(
-                              id_, title, basename_.split("_")[-1]))
+            api.download(link, path=save_dir,
+                         fname='{}_{}_{}'.format(
+                             id_, title, basename_.split('_')[-1]))
+
+
+def get_all_following_works(aapi, login_info):
+    following_data = retrieve_following(aapi, login_info)
+    following_len = len(following_data)
+    for idx, author_data in enumerate(following_data):
+        dirname = '{}_{}_{}'.format(
+            author_data['id'], author_data['name'], author_data['account'])
+        print('[{}/{}]: {}'.format(idx + 1, following_len, dirname))
+        download(aapi, author_data['illusts'], './pixivpy/following/'+dirname)
+
+
+def get_all_bookmarked_works(aapi, login_info):
+    bookmarked_data = retrieve_bookmarks(aapi, login_info)
+    download(aapi, bookmarked_data, './pixivpy/my_bookmarks')
 
 
 if __name__ == '__main__':
-    api = PixivAPI()
-    api.hosts = "https://app-api.pixiv.net"
-    aapi, login_info = auth(api)
-    bookmarked_data = retrieve_bookmarks(aapi, login_info)
-    download(aapi, bookmarked_data)
+    api, aapi, login_info = auth()
+    if input('get_all_following_works? [yn]: ') == 'y':
+        get_all_following_works(aapi, login_info)
+    if input('get_all_bookmarked_works? [yn]: ') == 'y':
+        get_all_bookmarked_works(aapi, login_info)

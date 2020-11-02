@@ -1,5 +1,6 @@
 *.swp
 *.save
 .vscode/
+log.json
 client.json
 pixivpy/
