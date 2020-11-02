@@ -1,0 +1,5 @@
+*.swp
+*.save
+.vscode/
+client.json
+pixivpy/
