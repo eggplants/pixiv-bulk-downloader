@@ -1,0 +1,28 @@
+Metadata-Version: 2.1
+Name: pixiv-bulk-downloader
+Version: 0.0.2
+Summary: Pixiv Bulk Downloader
+Home-page: https://github.com/eggplants/pixiv-bulk-downloader
+Author: eggplants
+License: MIT
+Description: # pixiv-bulk-downloader
+        
+        - Pixiv Bulk Downloader
+        
+        ## Feature
+        
+        - Download
+          - {following users', bookmarked} works
+        
+        ## Try
+        
+        ```bash
+        # pip 3.x
+        pip install pixiv-bulk-downloader
+        # run
+        pbd
+        ```
+        
+Platform: UNKNOWN
+Requires-Python: >=3.0
+Description-Content-Type: text/markdown

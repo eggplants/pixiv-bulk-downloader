@@ -1,0 +1,3 @@
+[console_scripts]
+pbd = main:main
+

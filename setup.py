@@ -20,7 +20,7 @@ setup(
     python_requires='>=3.0',
     include_package_data=True,
     license='MIT',
-    install_requires=['pixivpy3'],
+    install_requires=['PixivPy'],
     entry_points={
         'console_scripts': [
             'pbd=main:main'

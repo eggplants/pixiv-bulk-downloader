@@ -1,0 +1,8 @@
+README.md
+setup.py
+pixiv_bulk_downloader.egg-info/PKG-INFO
+pixiv_bulk_downloader.egg-info/SOURCES.txt
+pixiv_bulk_downloader.egg-info/dependency_links.txt
+pixiv_bulk_downloader.egg-info/entry_points.txt
+pixiv_bulk_downloader.egg-info/requires.txt
+pixiv_bulk_downloader.egg-info/top_level.txt
