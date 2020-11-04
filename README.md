@@ -1,6 +1,6 @@
 # pixiv-bulk-downloader
 
-[![PyPI version](https://badge.fury.io/py/pixiv-bulk-downloader.svg)](https://badge.fury.io/py/pixiv-bulk-downloader)
+[![Maintainability](https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability)](https://codeclimate.com/github/eggplants/pixiv-bulk-downloader/maintainability) [![PyPI version](https://badge.fury.io/py/pixiv-bulk-downloader.svg)](https://badge.fury.io/py/pixiv-bulk-downloader)
 
 - Pixiv Bulk Downloader
 
