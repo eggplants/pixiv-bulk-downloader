@@ -5,7 +5,10 @@
 ## Feature
 
 - Download
-  - {following users', bookmarked} works
+  - works of following users
+    - SAVE: `$HOME/pbd/following`
+  - bookmarked works
+    - SAVE: `$HOME/pbd/bookmarks`
 
 ## Try
 
@@ -14,4 +17,9 @@
 pip install pixiv-bulk-downloader
 # run
 pbd
+[+]ID is mail address, userid, account name.
+[+]ID:
+[+]Password:
+get_all_following_works? [yn]:
+get_all_bookmarked_works? [yn]:
 ```

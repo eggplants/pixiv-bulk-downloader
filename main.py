@@ -98,7 +98,7 @@ def retrieve_following(api, login_info):
     return users
 
 
-SAVE_DIR = os.path.join(os.path.expanduser("~"), 'pixivpy')
+SAVE_DIR = os.path.join(os.path.expanduser("~"), 'pbd')
 
 def download(api, data, save_dir=SAVE_DIR):
     os.makedirs(save_dir, exist_ok=True)
