@@ -1,5 +1,7 @@
 # pixiv-bulk-downloader
 
+[![PyPI version](https://badge.fury.io/py/pixiv-bulk-downloader.svg)](https://badge.fury.io/py/pixiv-bulk-downloader)
+
 - Pixiv Bulk Downloader
 
 ## Feature
