@@ -3,6 +3,7 @@ import os
 from getpass import getpass
 
 from pixivpy3 import AppPixivAPI, PixivAPI
+from pixivpy3.utils import PixivError
 
 '''client.json
 {
@@ -138,7 +139,12 @@ def get_all_bookmarked_works(aapi, login_info):
 
 
 def main():
-    api, aapi, login_info = auth()
+    try:
+        api, aapi, login_info = auth()
+    except PixivError as e:
+        print(e.reason)
+        exit(1)
+
     try:
         if input('get_all_following_works? [yn]: ') == 'y':
             get_all_following_works(aapi, login_info)
@@ -149,4 +155,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
