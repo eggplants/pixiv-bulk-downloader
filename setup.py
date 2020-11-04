@@ -9,7 +9,7 @@ python -m twine upload --repository pypi dist/*
 
 setup(
     name='pixiv-bulk-downloader',
-    version='0.0.2',
+    version='0.0.3',
     description='Pixiv Bulk Downloader',
     description_content_type='',
     long_description=open('README.md').read(),
