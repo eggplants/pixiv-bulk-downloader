@@ -98,7 +98,7 @@ def retrieve_following(api, login_info):
     return users
 
 
-def download(api, data, save_dir='./pixivpy'):
+def download(api, data, save_dir='~/pixivpy'):
     os.makedirs(save_dir, exist_ok=True)
     data_len = len(data)
     for idx, image_data in enumerate(data):
@@ -125,12 +125,12 @@ def get_all_following_works(aapi, login_info):
         dirname = '{}_{}_{}'.format(
             author_data['id'], author_data['name'], author_data['account']).replace('/', '／')
         print('[{}/{}]: {}'.format(idx + 1, following_len, dirname))
-        download(aapi, author_data['illusts'], './pixivpy/following/'+dirname)
+        download(aapi, author_data['illusts'], '~/pixivpy/following/'+dirname)
 
 
 def get_all_bookmarked_works(aapi, login_info):
     bookmarked_data = retrieve_bookmarks(aapi, login_info)
-    download(aapi, bookmarked_data, './pixivpy/my_bookmarks')
+    download(aapi, bookmarked_data, '~/pixivpy/my_bookmarks')
 
 
 def main():
