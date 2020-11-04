@@ -37,6 +37,7 @@ def retrieve_bookmarks(api, login_info):
         links = [page.image_urls.original for page in illust.meta_pages]
         link = illust.meta_single_page.get(
             'original_image_url', illust.image_urls.large)
+
         return (links if links != [] else link)
 
     urls, next, target_id = [], '', login_info.response.user.id
@@ -62,6 +63,7 @@ def retrieve_works(api, id_):
         links = [page.image_urls.original for page in illust.meta_pages]
         link = illust.meta_single_page.get(
             'original_image_url', illust.image_urls.large)
+
         return (links if links != [] else link)
 
     # pagenation
@@ -70,8 +72,7 @@ def retrieve_works(api, id_):
         # pagenation
         res_json = (api.user_illusts(target_id, type='illust')
                     if next == '' else api.user_illusts(**next))
-        urls.extend([
-            {
+        urls.extend([{
                 'id': illust.id,
                 'title': illust.title,
                 'link': ext_links(illust)}
@@ -92,8 +93,8 @@ def retrieve_following(api, login_info):
             "id": user_info.id,
             "name": user_info.name,
             "account": user_info.account,
-            "illusts": retrieve_works(api, user_info.id)
-        })
+            "illusts": retrieve_works(api, user_info.id)})
+
     return users
 
 
@@ -101,22 +102,20 @@ def download(api, data, save_dir='./pixivpy'):
     os.makedirs(save_dir, exist_ok=True)
     data_len = len(data)
     for idx, image_data in enumerate(data):
-        title, id_ = image_data['title'], image_data['id']
+        title, id_ = image_data['title'].replace('/', '／'), image_data['id']
         link = image_data['link']
         print('[{}/{}]: {}({})'.format(idx + 1, data_len, title, id_))
         if type(link) is list:
             for _ in link:
                 basename_ = _.split('/')[-1]
-                print(basename_, end="\r")
-                api.download(_, path=save_dir,
-                             fname='{}_{}_{}'.format(
-                                 id_, title, basename_.split('_')[-1]))
+                fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
+                print(fname, end="\r")
+                api.download(_, path=save_dir,fname=fname)
         else:
             basename_ = link.split('/')[-1]
-            print(basename_, end="\r")
-            api.download(link, path=save_dir,
-                         fname='{}_{}_{}'.format(
-                             id_, title, basename_.split('_')[-1]))
+            fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
+            print(fname, end="\r")
+            api.download(link, path=save_dir, fname=fname)
 
 
 def get_all_following_works(aapi, login_info):
@@ -124,7 +123,7 @@ def get_all_following_works(aapi, login_info):
     following_len = len(following_data)
     for idx, author_data in enumerate(following_data):
         dirname = '{}_{}_{}'.format(
-            author_data['id'], author_data['name'], author_data['account'])
+            author_data['id'], author_data['name'], author_data['account']).replace('/', '／')
         print('[{}/{}]: {}'.format(idx + 1, following_len, dirname))
         download(aapi, author_data['illusts'], './pixivpy/following/'+dirname)
 
@@ -134,9 +133,16 @@ def get_all_bookmarked_works(aapi, login_info):
     download(aapi, bookmarked_data, './pixivpy/my_bookmarks')
 
 
-if __name__ == '__main__':
+def main():
     api, aapi, login_info = auth()
-    if input('get_all_following_works? [yn]: ') == 'y':
-        get_all_following_works(aapi, login_info)
-    if input('get_all_bookmarked_works? [yn]: ') == 'y':
-        get_all_bookmarked_works(aapi, login_info)
+    try:
+        if input('get_all_following_works? [yn]: ') == 'y':
+            get_all_following_works(aapi, login_info)
+        if input('get_all_bookmarked_works? [yn]: ') == 'y':
+            get_all_bookmarked_works(aapi, login_info)
+    except KeyError as e:
+        print(e, 'Request limit seem to be exceeded.')
+
+
+if __name__ == '__main__':
+    main()
