@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+
 import json
 import os
+import random
+import time
 from getpass import getpass
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
@@ -32,7 +36,11 @@ class UserInfo(TypedDict):
     illusts: List[IllustInfo]
 
 
-def auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
+def rand_sleep(base: float=0.1, rand: float=0.5) -> None:
+    time.sleep(base + rand * random.random())
+
+
+def _auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
     login_cred: Optional[LoginCred] = (
         json.load(open('client.json', 'r'))
         if os.path.exists('client.json') else None)
@@ -52,6 +60,20 @@ def auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
         aapi.login(stdin_login[0], stdin_login[1])
 
     return (api, aapi, login_info)
+
+
+def auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
+    cnt = 0
+    while cnt < 3:
+        try:
+            return _auth()
+        except PixivError as e:
+            j = json.loads(e.body)
+            print('{} <{}>'.format(j["errors"]["system"]["message"], j["error"]))
+            cnt += 1
+    else:
+        print('The number of login attempts has been exceeded.')
+        exit(1)
 
 
 def retrieve_bookmarks(
@@ -81,6 +103,7 @@ def retrieve_bookmarks(
         next = aapi.parse_qs(res_json['next_url'])
         if not next:
             break
+        rand_sleep()
 
     return urls
 
@@ -109,6 +132,7 @@ def retrieve_works(aapi: AppPixivAPI, id_: int) -> List[IllustInfo]:
         next = aapi.parse_qs(res_json['next_url'])
         if not next:
             break
+        rand_sleep()
 
     return urls
 
@@ -139,17 +163,17 @@ def download(
     for idx, image_data in enumerate(data):
         title, id_ = image_data['title'].replace('/', '／'), image_data['id']
         link = image_data['link']
-        print('[{}/{}]: {}({})'.format(idx + 1, data_len, title, id_))
+        print('\033[K' + '[{}/{}]: {}({})'.format(idx + 1, data_len, title, id_))
         if type(link) is list:
             for _ in link:
                 basename_: str = _.split('/')[-1]
                 fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
-                print(fname, end="\r")
+                print('\033[K' + fname, end="\r")
                 aapi.download(_, path=save_dir, fname=fname)
         else:
             basename_ = link.split('/')[-1]
             fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
-            print(fname, end="\r")
+            print('\033[K' + fname, end="\r")
             aapi.download(link, path=save_dir, fname=fname)
 
 
@@ -160,7 +184,7 @@ def get_all_following_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
         dirname = '{}_{}_{}'.format(
             author_data['id'], author_data['name'],
             author_data['account']).replace('/', '／')
-        print('[{}/{}]: {}'.format(idx + 1, following_len, dirname))
+        print('\033[K' + '[{}/{}]: {}'.format(idx + 1, following_len, dirname))
         download(aapi, author_data['illusts'],
                  os.path.join(SAVE_DIR, 'following', dirname))
 
@@ -171,11 +195,7 @@ def get_all_bookmarked_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
 
 
 def main() -> None:
-    try:
-        api, aapi, login_info = auth()
-    except PixivError as e:
-        print(e.reason)
-        exit(1)
+    api, aapi, login_info = auth()
 
     if input('get_all_following_works? [yn]: ') == 'y':
         get_all_following_works(aapi, login_info)
@@ -187,6 +207,6 @@ if __name__ == '__main__':
     try:
         main()
     except KeyError as e:
-        print(e, 'Request limit seem to be exceeded.')
+        print(e, 'Request limit seem to be exceeded. Try again later.')
     except KeyboardInterrupt:
         pass
