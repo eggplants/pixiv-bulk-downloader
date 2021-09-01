@@ -63,9 +63,9 @@ def _auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
     else:
         print('[+]ID is mail address, userid, account name.')
         stdin_login = (input('[+]ID: '), getpass('[+]Password: '))
+        print("[+]Login...")
         ref = get_refresh_token(stdin_login[0], stdin_login[1])
         login_info = api.auth(refresh_token=ref)
-        print("[+]Login...")
         aapi.auth(refresh_token=ref)
 
     return (api, aapi, login_info)
@@ -189,7 +189,7 @@ def download(
 
 
 def get_all_following_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
-    print("[+]Fetching infomation of folliwing works...")
+    print("[+]Fetching infomation of following works...")
     following_data = retrieve_following(aapi, login_info)
     following_len = len(following_data)
     for idx, author_data in enumerate(following_data):
@@ -211,10 +211,12 @@ def get_all_bookmarked_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
 def _main() -> None:
     api, aapi, login_info = auth()
     print("[+]OK!")
-    if input('get_all_following_works? [yn]: ') == 'y':
+    if input('get_all_following_works? (n/y): ') == 'y':
         get_all_following_works(aapi, login_info)
-    if input('get_all_bookmarked_works? [yn]: ') == 'y':
+        print('\033[K[+]Finish!')
+    if input('get_all_bookmarked_works? (n/y): ') == 'y':
         get_all_bookmarked_works(aapi, login_info)
+        print('\033[K[+]Finish!')
 
 
 def main() -> None:
