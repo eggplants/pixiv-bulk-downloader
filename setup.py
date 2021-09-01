@@ -23,7 +23,7 @@ setup(
     install_requires=['PixivPy', 'gppt'],
     entry_points={
         'console_scripts': [
-            'pbd=main:main'
+            'pbd=pbd.main:main'
         ]
     }
 )

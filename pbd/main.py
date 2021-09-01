@@ -204,7 +204,7 @@ def get_all_bookmarked_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
     download(aapi, bookmarked_data, os.path.join(SAVE_DIR, 'bookmarks'))
 
 
-def main() -> None:
+def _main() -> None:
     api, aapi, login_info = auth()
 
     if input('get_all_following_works? [yn]: ') == 'y':
@@ -213,10 +213,13 @@ def main() -> None:
         get_all_bookmarked_works(aapi, login_info)
 
 
-if __name__ == '__main__':
+def main() -> None:
     try:
-        main()
+        _main()
     except KeyError as e:
         print(e, 'Request limit seem to be exceeded. Try again later.')
     except KeyboardInterrupt:
         pass
+
+if __name__ == '__main__':
+    main()
