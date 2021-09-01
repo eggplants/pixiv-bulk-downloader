@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup  # type: ignore
 
 """Update:
 (change version,)
@@ -20,7 +20,7 @@ setup(
     python_requires='>=3.0',
     include_package_data=True,
     license='MIT',
-    install_requires=['PixivPy'],
+    install_requires=['PixivPy', 'gppt'],
     entry_points={
         'console_scripts': [
             'pbd=main:main'

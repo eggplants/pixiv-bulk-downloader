@@ -7,6 +7,7 @@ import time
 from getpass import getpass
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
+from gppt import selenium as s  # type: ignore
 from pixivpy3 import AppPixivAPI, PixivAPI  # type: ignore
 from pixivpy3.utils import JsonDict, PixivError  # type: ignore
 
@@ -36,7 +37,13 @@ class UserInfo(TypedDict):
     illusts: List[IllustInfo]
 
 
-def rand_sleep(base: float=0.1, rand: float=0.5) -> None:
+def get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
+    gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
+    res = gpt.login()
+    return res["refresh_token"]
+
+
+def rand_sleep(base: float = 0.1, rand: float = 2.5) -> None:
     time.sleep(base + rand * random.random())
 
 
@@ -49,15 +56,16 @@ def _auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
     aapi: AppPixivAPI = AppPixivAPI()
 
     if login_cred is not None:
-        login_info: JsonDict = api.login(
-            login_cred['pixiv_id'], login_cred['password'])
+        ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])
+        login_info: JsonDict = api.auth(refresh_token=ref)
 
-        aapi.login(login_cred['pixiv_id'], login_cred['password'])
+        aapi.auth(refresh_token=ref)
     else:
         print('[+]ID is mail address, userid, account name.')
         stdin_login = (input('[+]ID: '), getpass('[+]Password: '))
-        login_info = api.login(stdin_login[0], stdin_login[1])
-        aapi.login(stdin_login[0], stdin_login[1])
+        ref = get_refresh_token(stdin_login[0], stdin_login[1])
+        login_info = api.auth(refresh_token=ref)
+        aapi.auth(refresh_token=ref)
 
     return (api, aapi, login_info)
 
@@ -69,7 +77,8 @@ def auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
             return _auth()
         except PixivError as e:
             j = json.loads(e.body)
-            print('{} <{}>'.format(j["errors"]["system"]["message"], j["error"]))
+            print('{} <{}>'.format(
+                j["errors"]["system"]["message"], j["error"]))
             cnt += 1
     else:
         print('The number of login attempts has been exceeded.')
@@ -103,7 +112,7 @@ def retrieve_bookmarks(
         next = aapi.parse_qs(res_json['next_url'])
         if not next:
             break
-        rand_sleep()
+        rand_sleep(0.5)
 
     return urls
 
@@ -132,7 +141,7 @@ def retrieve_works(aapi: AppPixivAPI, id_: int) -> List[IllustInfo]:
         next = aapi.parse_qs(res_json['next_url'])
         if not next:
             break
-        rand_sleep()
+        rand_sleep(0.5)
 
     return urls
 
@@ -163,7 +172,8 @@ def download(
     for idx, image_data in enumerate(data):
         title, id_ = image_data['title'].replace('/', '／'), image_data['id']
         link = image_data['link']
-        print('\033[K' + '[{}/{}]: {}({})'.format(idx + 1, data_len, title, id_))
+        print('\033[K' + '[{}/{}]: {}({})'.format(
+            idx + 1, data_len, title, id_))
         if type(link) is list:
             for _ in link:
                 basename_: str = _.split('/')[-1]
@@ -171,7 +181,7 @@ def download(
                 print('\033[K' + fname, end="\r")
                 aapi.download(_, path=save_dir, fname=fname)
         else:
-            basename_ = link.split('/')[-1]
+            basename_ = link.split('/')[-1]  # type: ignore
             fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
             print('\033[K' + fname, end="\r")
             aapi.download(link, path=save_dir, fname=fname)

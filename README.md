@@ -14,6 +14,8 @@
 
 ## Try
 
+Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
+
 ```bash
 # pip 3.x
 pip install pixiv-bulk-downloader
