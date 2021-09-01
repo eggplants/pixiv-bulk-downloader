@@ -189,18 +189,21 @@ def download(
 
 
 def get_all_following_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
+    print("[+]Fetching infomation of folliwing works...")
     following_data = retrieve_following(aapi, login_info)
     following_len = len(following_data)
     for idx, author_data in enumerate(following_data):
         dirname = '{}_{}_{}'.format(
             author_data['id'], author_data['name'],
             author_data['account']).replace('/', '／')
-        print('\033[K' + '[{}/{}]: {}'.format(idx + 1, following_len, dirname))
+        print('\033[K' + '[Artist][{}/{}]: {}'.format(idx +
+              1, following_len, dirname))
         download(aapi, author_data['illusts'],
                  os.path.join(SAVE_DIR, 'following', dirname))
 
 
 def get_all_bookmarked_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
+    print("[+]Fetching infomation of bookmarked works...")
     bookmarked_data = retrieve_bookmarks(aapi, login_info)
     download(aapi, bookmarked_data, os.path.join(SAVE_DIR, 'bookmarks'))
 
@@ -221,6 +224,7 @@ def main() -> None:
         print(e, 'Request limit seem to be exceeded. Try again later.')
     except KeyboardInterrupt:
         pass
+
 
 if __name__ == '__main__':
     main()
