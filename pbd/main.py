@@ -58,13 +58,14 @@ def _auth() -> Tuple[PixivAPI, AppPixivAPI, JsonDict]:
     if login_cred is not None:
         ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])
         login_info: JsonDict = api.auth(refresh_token=ref)
-
+        print("[+]Login...")
         aapi.auth(refresh_token=ref)
     else:
         print('[+]ID is mail address, userid, account name.')
         stdin_login = (input('[+]ID: '), getpass('[+]Password: '))
         ref = get_refresh_token(stdin_login[0], stdin_login[1])
         login_info = api.auth(refresh_token=ref)
+        print("[+]Login...")
         aapi.auth(refresh_token=ref)
 
     return (api, aapi, login_info)
@@ -206,7 +207,7 @@ def get_all_bookmarked_works(aapi: AppPixivAPI, login_info: JsonDict) -> None:
 
 def _main() -> None:
     api, aapi, login_info = auth()
-
+    print("[+]OK!")
     if input('get_all_following_works? [yn]: ') == 'y':
         get_all_following_works(aapi, login_info)
     if input('get_all_bookmarked_works? [yn]: ') == 'y':
