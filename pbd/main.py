@@ -157,9 +157,8 @@ def retrieve_following(aapi: AppPixivAPI, login_info: JsonDict)\
             res_json = aapi.user_following(**next_qs)
 
         next_qs = aapi.parse_qs(res_json.next_url)
-        # print(next_qs)
         users.extend(extract_artist_info(aapi, res_json.user_previews))
-        rand_sleep(0.2)
+        rand_sleep(0.5)
 
     return users
 
@@ -168,6 +167,8 @@ def extract_artist_info(aapi: AppPixivAPI, user_previews: Any) -> List[Any]:
     users = []
     for user in user_previews:
         user_info: JsonDict = user.user
+        print('\033[K[+]Now processing...: {}(id: {})'.format(
+            user_info.name, user_info.id), end="\r", flush=True)
         users.append({
             "id": user_info.id,
             "name": user_info.name,
@@ -188,7 +189,7 @@ def download(
     for idx, image_data in enumerate(data):
         title, id_ = image_data['title'].replace('/', '／'), image_data['id']
         link = image_data['link']
-        print('\033[K' + '[{}/{}]: {}({})'.format(
+        print('\033[K' + '[{}/{}]: {}(id: {})'.format(
             idx + 1, data_len, title, id_))
         if type(link) is list:
             for _ in link:
