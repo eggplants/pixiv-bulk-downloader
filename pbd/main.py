@@ -97,22 +97,21 @@ def retrieve_bookmarks(
         return (links if links != [] else link)
 
     urls: List[IllustInfo] = []
-    next: Optional[Dict[str, Any]] = None
+    next: Optional[Union[Dict[str, Any], str]] = ""
     target_id = login_info.response.user.id
-    while True:
-        # pagenation
-        res_json: JsonDict = (aapi.user_bookmarks_illust(target_id)
-                              if next is None
-                              else aapi.user_bookmarks_illust(**next))
-        urls.extend([
-            {
-                'id': illust.id,
-                'title': illust.title,
-                'link': ext_links(illust)}
-            for illust in res_json['illusts']])
+    while next is not None:
+        if next == "":
+            res_json: JsonDict = aapi.user_bookmarks_illust(target_id)
+        else:
+            res_json = aapi.user_bookmarks_illust(**next)
+        for illust in res_json['illusts']:
+            urls.append(
+                {
+                    'id': illust.id,
+                    'title': illust.title,
+                    'link': ext_links(illust)}
+            )
         next = aapi.parse_qs(res_json['next_url'])
-        if not next:
-            break
         rand_sleep(0.5)
 
     return urls
@@ -126,40 +125,56 @@ def retrieve_works(aapi: AppPixivAPI, id_: int) -> List[IllustInfo]:
 
         return (links if links != [] else link)
 
-    # pagenation
     urls: List[IllustInfo] = []
-    next: Optional[Dict[str, Any]] = None
+    next: Optional[Union[Dict[str, Any], str]] = ""
     target_id = id_
-    while True:
-        # pagenation
-        res_json = (aapi.user_illusts(target_id, type='illust')
-                    if next is None else aapi.user_illusts(**next))
-        urls.extend([{
-            'id': illust.id,
-            'title': illust.title,
-            'link': ext_links(illust)}
-            for illust in res_json['illusts']])
+    while next is not None:
+        if next == "":
+            res_json = aapi.user_illusts(target_id, type='illust')
+        else:
+            res_json = aapi.user_illusts(**next)
+        for illust in res_json['illusts']:
+            urls.append({
+                'id': illust.id,
+                'title': illust.title,
+                'link': ext_links(illust)}
+            )
         next = aapi.parse_qs(res_json['next_url'])
-        if not next:
-            break
-        rand_sleep(0.5)
+        rand_sleep(1.5)
 
     return urls
 
 
-def retrieve_following(
-        aapi: AppPixivAPI, login_info: JsonDict) -> List[UserInfo]:
+def retrieve_following(aapi: AppPixivAPI, login_info: JsonDict)\
+        -> List[UserInfo]:
     users: List[UserInfo] = []
-    res_json: JsonDict = aapi.user_following(login_info.response.user.id)
-    for user in res_json.user_previews:
+    next_qs = ""
+    while next_qs is not None:
+        if next_qs == "":
+            res_json: JsonDict = aapi.user_following(
+                login_info.response.user.id)
+        else:
+            res_json = aapi.user_following(**next_qs)
+
+        next_qs = aapi.parse_qs(res_json.next_url)
+        # print(next_qs)
+        users.extend(extract_artist_info(aapi, res_json.user_previews))
+        rand_sleep(0.2)
+
+    return users
+
+
+def extract_artist_info(aapi: AppPixivAPI, user_previews: Any) -> List[Any]:
+    users = []
+    for user in user_previews:
         user_info: JsonDict = user.user
         users.append({
             "id": user_info.id,
             "name": user_info.name,
             "account": user_info.account,
             "illusts": retrieve_works(aapi, user_info.id)})
-
-    return users
+    else:
+        return users
 
 
 SAVE_DIR = os.path.join(os.path.expanduser("~"), 'pbd')
@@ -224,8 +239,8 @@ def main() -> None:
         _main()
     except KeyError as e:
         print(e, 'Request limit seem to be exceeded. Try again later.')
-    except KeyboardInterrupt:
-        pass
+    # except KeyboardInterrupt:
+    #     pass
 
 
 if __name__ == '__main__':
