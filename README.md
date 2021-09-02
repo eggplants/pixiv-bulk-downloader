@@ -4,6 +4,12 @@
 
 - Pixiv Bulk Downloader
 
+## Capture
+
+![image](https://user-images.githubusercontent.com/42153744/131824438-2b0b8cc4-5b63-4f0c-ab01-f0f603b0767c.png)
+
+![image](https://user-images.githubusercontent.com/42153744/131824678-b6080b05-94f8-45a3-9ea0-d9b3866a18f6.png)
+
 ## Feature
 
 - Download
