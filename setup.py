@@ -1,3 +1,5 @@
+from typing import List
+
 from setuptools import find_packages, setup  # type: ignore
 
 """Update:
@@ -6,6 +8,13 @@ sudo rm -rf build dist *.egg-info
 python setup.py sdist bdist_wheel
 python -m twine upload --repository pypi dist/*
 """
+
+
+def parse_requires():
+    # type: () -> List[str]
+    d = open('requirements.txt').read()
+    return d.replace('\r', '').rstrip().split('\n')
+
 
 setup(
     name='pixiv-bulk-downloader',
@@ -17,10 +26,10 @@ setup(
     url='https://github.com/eggplants/pixiv-bulk-downloader',
     author='eggplants',
     packages=find_packages(),
-    python_requires='>=3.0',
+    python_requires='>=3.5',
     include_package_data=True,
     license='MIT',
-    install_requires=['PixivPy', 'gppt'],
+    install_requires=parse_requires,
     entry_points={
         'console_scripts': [
             'pbd=pbd.main:main'

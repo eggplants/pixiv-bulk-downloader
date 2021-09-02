@@ -1,0 +1,6 @@
+STR_TYPE: type
+RUNNING_PYTHON_2: bool
+
+
+def getch() -> str: ...
+def getpass(prompt: str = ..., mask: str = ...) -> str: ...
