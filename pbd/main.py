@@ -7,10 +7,10 @@ import sys
 import time
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, Union
 
+import stdiomask
 from gppt import selenium as s
-from pixivpy3 import AppPixivAPI  # type: ignore
-from pixivpy3.utils import JsonDict  # type: ignore
-from stdiomask import getch, getpass
+from pixivpy3 import AppPixivAPI
+from pixivpy3.utils import JsonDict
 
 '''client.json
 {
@@ -42,6 +42,12 @@ class UserInfo(TypedDict):
     illusts: List[IllustInfo]
 
 
+def getch() -> str:
+    c = stdiomask.getch()
+    print()
+    return c
+
+
 def get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
     gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
     res = gpt.login()
@@ -58,18 +64,20 @@ def _auth(cnt: int) -> Tuple[AppPixivAPI, JsonDict]:
         if os.path.exists('client.json') else None)
     aapi: AppPixivAPI = AppPixivAPI()
 
-    if (login_cred is None) and cnt < 1:
+    if login_cred is not None and cnt == 0:
+        ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])
+        print('\x1b[?25l[+]: Login...')
+        login_info = aapi.auth(refresh_token=ref)
+    elif login_cred is None or (login_cred is not None and cnt != 0):
         print('[+]: ID is mail address, userid, account name.')
-        stdin_login = (getpass(prompt='[?]: ID: '),
-                       getpass(prompt='[?]: PW: '))
+        stdin_login = (stdiomask.getpass(prompt='[?]: ID: '),
+                       stdiomask.getpass(prompt='[?]: PW: '))
         print('\x1b[?25l[+]: Login...', end='\r')
         ref = get_refresh_token(stdin_login[0], stdin_login[1])
         login_info = aapi.auth(refresh_token=ref)
-        print('\033[K[+]: Login...=>OK!')
-    elif login_cred is not None:
-        ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])
-        print('\x1b[?25l[+]: Login...')
-        aapi.auth(refresh_token=ref)
+        print('\033[K[+]: Login...OK!')
+    else:
+        raise LoginFailed
 
     return (aapi, login_info)
 
@@ -78,9 +86,11 @@ def auth() -> Tuple[AppPixivAPI, JsonDict]:
     cnt = 0
     while cnt < 3:
         try:
-            return _auth(cnt)
-        except ValueError:
+            aapi, login_info = _auth(cnt)
+        except (ValueError, UnboundLocalError):
             print('\x1b[?25h[!]: Failed to login. Check your ID or PW.')
+        else:
+            return aapi, login_info
         cnt += 1
     else:
         print('[!]: The number of login attempts has been exceeded.')
@@ -258,13 +268,14 @@ def _main(aapi: AppPixivAPI, login_info: JsonDict) -> None:
     else:
         print('[?]: Download all works of following? '
               '({} artists) (n/y): '.format(total_following_len),
-              end='', flush=True)
+              flush=True, end="")
         if getch() == 'y':
             get_all_following_works(aapi, login_info)
             print('\033[K[+]: Finish!')
-        print('[?]: Download all bookmarked? '
-              '({} works) (n/y): '.format(total_bookmark_len),
-              end='',  flush=True)
+        else:
+            print('[?]: Download all bookmarked? '
+                  '({} works) (n/y): '.format(total_bookmark_len),
+                  flush=True, end="")
         if getch() == 'y':
             get_all_bookmarked_works(aapi, login_info)
             print('\033[K[+]: Finish!')
