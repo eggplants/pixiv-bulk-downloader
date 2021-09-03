@@ -83,8 +83,9 @@ class PixivBaseDownloader:
                     id_, title, basename_.split('_')[-1])
                 print('\033[K' + fname, end="\r")
                 self.aapi.download(link, path=save_path, fname=fname)
-            else:
-                basename_ = links.split('/')[-1]  # type: ignore
-                fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
-                print('\033[K' + fname, end="\r")
-                self.aapi.download(link, path=save_path, fname=fname)
+        elif type(links) is str:
+            link = links
+            basename_ = link.split('/')[-1]  # type: ignore
+            fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
+            print('\033[K' + fname, end="\r")
+            self.aapi.download(link, path=save_path, fname=fname)
