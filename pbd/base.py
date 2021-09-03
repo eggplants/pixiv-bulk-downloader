@@ -70,17 +70,21 @@ class BasePixivDownloader:
             links = image_data['link']
             print(f'\033[K[%0{d_width}d/%0{d_width}d]: %s (id: %d)'
                   % (idx + 1, data_len, title, id_))
-            if type(links) is list:
-                for link in links:
-                    basename_: str = link.split('/')[-1]
-                    fname = '{}_{}_{}'.format(
-                        id_, title, basename_.split('_')[-1])
-                    print('\033[K' + fname, end="\r")
-                    self.aapi.download(link, path=save_path, fname=fname)
+            self.__download(links, id_, title, save_path)
+
+            print('\033[K\033[A\033[K', end='', flush=True)
+
+    def __download(self, links: Union[str, List[str]],
+                   title: str, id_: int, save_path: str) -> None:
+        if type(links) is list:
+            for link in links:
+                basename_: str = link.split('/')[-1]
+                fname = '{}_{}_{}'.format(
+                    id_, title, basename_.split('_')[-1])
+                print('\033[K' + fname, end="\r")
+                self.aapi.download(link, path=save_path, fname=fname)
             else:
                 basename_ = links.split('/')[-1]  # type: ignore
                 fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
                 print('\033[K' + fname, end="\r")
                 self.aapi.download(link, path=save_path, fname=fname)
-
-            print('\033[K\033[A\033[K', end='', flush=True)

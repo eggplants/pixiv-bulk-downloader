@@ -35,9 +35,10 @@ def _auth(cnt: int,
     aapi: AppPixivAPI = AppPixivAPI()
     login_cred: Optional[LoginCred] = None
     if os.path.exists('client.json'):
-        login_cred = json.load(open(auth_json_path, 'r'))
-        if set(login_cred.keys()) != {'pixiv_id', 'password'}:
-            login_cred = None
+        cred_data = json.load(open(auth_json_path, 'r'))
+        login_cred = (None
+                      if set(cred_data.keys()) != {'pixiv_id', 'password'}
+                      else cred_data)
 
     if login_cred is not None and cnt == 0:
         ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])
@@ -96,10 +97,9 @@ def _main(aapi: AppPixivAPI, login_info: JsonDict) -> None:
         if getch() == 'y':
             f.get_all_following_works()
             print('\033[K[+]: Finish!')
-        else:
-            print('[?]: Download all bookmarked? '
-                  '({} works) (n/y): '.format(total_bookmark_len),
-                  flush=True, end="")
+        print('[?]: Download all bookmarked? '
+              '({} works) (n/y): '.format(total_bookmark_len),
+              flush=True, end="")
         if getch() == 'y':
             b.get_all_bookmarked_works()
             print('\033[K[+]: Finish!')
