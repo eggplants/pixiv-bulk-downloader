@@ -1,4 +1,3 @@
-
 import os
 import random
 import time
@@ -18,13 +17,10 @@ class BasePixivDownloader:
         self.save_dir = save_dir
 
     def refresh(self) -> None:
-        if self.aapi.refresh_token is not None:
-            res = s.GetPixivToken.refresh(
-                refresh_token=self.aapi.refresh_token)
-            if self.aapi.refresh_token == res['refresh_token']:
-                print("[!]refreshing")
-                self.aapi.auth(refresh_token=res["refresh_token"])
-                print('[+]refreshed!')
+        res = s.GetPixivToken.refresh(
+            refresh_token=self.aapi.refresh_token)
+        self.aapi = AppPixivAPI()
+        self.aapi.auth(refresh_token=res['refresh_token'])
 
     @staticmethod
     def rand_sleep(base: float = 0.1, rand: float = 2.5) -> None:
@@ -47,7 +43,10 @@ class BasePixivDownloader:
                 res_json = self.aapi.user_illusts(target_id, type='illust')
             else:
                 res_json = self.aapi.user_illusts(**next)  # type: ignore
-
+            err_msg = 'Error Message: invalid_grant'
+            if 'error' in res_json and err_msg in res_json['error']['message']:
+                self.refresh()
+                continue
             for illust in res_json['illusts']:
                 urls.append({
                     'id': illust.id,
@@ -68,18 +67,18 @@ class BasePixivDownloader:
         for idx, image_data in enumerate(data):
             title, id_ = image_data['title'].replace(
                 '/', '／'), image_data['id']
-            link = image_data['link']
+            links = image_data['link']
             print(f'\033[K[%0{d_width}d/%0{d_width}d]: %s (id: %d)'
                   % (idx + 1, data_len, title, id_))
-            if type(link) is list:
-                for _ in link:
-                    basename_: str = _.split('/')[-1]
+            if type(links) is list:
+                for link in links:
+                    basename_: str = link.split('/')[-1]
                     fname = '{}_{}_{}'.format(
                         id_, title, basename_.split('_')[-1])
                     print('\033[K' + fname, end="\r")
-                    self.aapi.download(_, path=save_path, fname=fname)
+                    self.aapi.download(link, path=save_path, fname=fname)
             else:
-                basename_ = link.split('/')[-1]  # type: ignore
+                basename_ = links.split('/')[-1]  # type: ignore
                 fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
                 print('\033[K' + fname, end="\r")
                 self.aapi.download(link, path=save_path, fname=fname)

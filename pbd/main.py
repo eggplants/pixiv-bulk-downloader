@@ -24,20 +24,20 @@ SAVE_DIR = os.getenv("SAVE_DIR",
 '''
 
 
-# main
-
-
 def get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
     gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
     res = gpt.login()
     return res["refresh_token"]
 
 
-def _auth(cnt: int) -> Tuple[AppPixivAPI, JsonDict]:
-    login_cred: Optional[LoginCred] = (
-        json.load(open('client.json', 'r'))
-        if os.path.exists('client.json') else None)
+def _auth(cnt: int,
+          auth_json_path: str = 'client.json') -> Tuple[AppPixivAPI, JsonDict]:
     aapi: AppPixivAPI = AppPixivAPI()
+    login_cred: Optional[LoginCred] = None
+    if os.path.exists('client.json'):
+        login_cred = json.load(open(auth_json_path, 'r'))
+        if set(login_cred.keys()) != {'pixiv_id', 'password'}:
+            login_cred = None
 
     if login_cred is not None and cnt == 0:
         ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])

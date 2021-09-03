@@ -25,7 +25,6 @@ class FollowingsPixivDownloader(BasePixivDownloader):
             users.extend(self.extract_artist_info(
                 res_json.user_previews,
                 total, now_retrieved_len))
-            self.refresh()
             self.rand_sleep(1.5)
 
         return users

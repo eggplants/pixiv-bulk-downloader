@@ -41,7 +41,6 @@ class BookmarksPixivDownloader(BasePixivDownloader):
                 )
             next = self.aapi.parse_qs(res_json['next_url'])
             urls_len = len(urls)
-            self.refresh()
             self.rand_sleep(0.5)
         else:
             return urls
