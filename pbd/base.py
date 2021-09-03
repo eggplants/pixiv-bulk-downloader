@@ -55,8 +55,8 @@ class PixivBaseDownloader:
                 )
             next = self.aapi.parse_qs(res_json['next_url'])
             self.rand_sleep(1.5)
-
-        return urls
+        else:
+            return urls
 
     def download(
             self, data: List[IllustInfo],
