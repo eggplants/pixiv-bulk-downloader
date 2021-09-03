@@ -1,0 +1,9 @@
+from .base import PixivBaseDownloader as PixivBaseDownloader
+from .types import UserInfo as UserInfo
+from pixivpy3.utils import JsonDict as JsonDict
+from typing import Any, List
+
+class PixivFollowingsDownloader(PixivBaseDownloader):
+    def retrieve_following(self) -> List[UserInfo]: ...
+    def extract_artist_info(self, user_previews: Any, following_total: int, retrieved: int) -> List[Any]: ...
+    def get_all_following_works(self) -> None: ...
