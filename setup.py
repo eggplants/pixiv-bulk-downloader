@@ -29,7 +29,7 @@ setup(
     python_requires='>=3.5',
     include_package_data=True,
     license='MIT',
-    install_requires=parse_requires,
+    install_requires=parse_requires(),
     entry_points={
         'console_scripts': [
             'pbd=pbd.main:main'
