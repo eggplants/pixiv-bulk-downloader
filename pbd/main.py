@@ -30,15 +30,21 @@ def get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
     return res["refresh_token"]
 
 
+def read_client_cred(path: str) -> Optional[LoginCred]:
+    if os.path.exists('client.json'):
+        cred_data = json.load(open(path, 'r'))
+        if set(cred_data.keys()) == {'pixiv_id', 'password'}:
+            return cred_data
+        else:
+            return None
+    else:
+        return None
+
+
 def _auth(cnt: int,
           auth_json_path: str = 'client.json') -> Tuple[AppPixivAPI, JsonDict]:
     aapi: AppPixivAPI = AppPixivAPI()
-    login_cred: Optional[LoginCred] = None
-    if os.path.exists('client.json'):
-        cred_data = json.load(open(auth_json_path, 'r'))
-        login_cred = (None
-                      if set(cred_data.keys()) != {'pixiv_id', 'password'}
-                      else cred_data)
+    login_cred: Optional[LoginCred] = read_client_cred(auth_json_path)
 
     if login_cred is not None and cnt == 0:
         ref = get_refresh_token(login_cred['pixiv_id'], login_cred['password'])
