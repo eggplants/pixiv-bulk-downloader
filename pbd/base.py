@@ -10,7 +10,7 @@ from pixivpy3.utils import JsonDict
 from .types import IllustInfo
 
 
-class BasePixivDownloader:
+class PixivBaseDownloader:
     def __init__(self, aapi: AppPixivAPI, login_info: JsonDict, save_dir: str):
         self.aapi = aapi
         self.login_info = login_info

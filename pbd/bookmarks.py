@@ -3,11 +3,11 @@ from typing import Dict, List, Optional, Union
 
 from pixivpy3.utils import JsonDict
 
-from .base import BasePixivDownloader
+from .base import PixivBaseDownloader
 from .types import IllustInfo
 
 
-class BookmarksPixivDownloader(BasePixivDownloader):
+class PixivBookmarksDownloader(PixivBaseDownloader):
     def get_all_bookmarked_works(self) -> None:
         print('\n[+]: Fetching infomation of bookmarked works...')
         bookmarked_data = self.retrieve_bookmarks()

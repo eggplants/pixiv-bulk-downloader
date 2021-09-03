@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Optional
 
 from pixivpy3.utils import JsonDict
 
-from .base import BasePixivDownloader
+from .base import PixivBaseDownloader
 from .types import UserInfo
 
 
-class FollowingsPixivDownloader(BasePixivDownloader):
+class PixivFollowingsDownloader(PixivBaseDownloader):
     def retrieve_following(self) -> List[UserInfo]:
         users: List[UserInfo] = []
         next_qs: Optional[Dict[str, str]] = {}
