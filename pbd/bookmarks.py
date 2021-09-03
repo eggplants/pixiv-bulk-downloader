@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Union
 from pixivpy3.utils import JsonDict
 
 from .base import PixivBaseDownloader
-from .types import IllustInfo
+from .pixiv_types import IllustInfo
 
 
 class PixivBookmarksDownloader(PixivBaseDownloader):
@@ -27,8 +27,7 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
             if next == {}:
                 res_json: JsonDict = self.aapi.user_bookmarks_illust(target_id)
             else:
-                res_json = self.aapi\
-                    .user_bookmarks_illust(**next)  # type: ignore
+                res_json = self.aapi.user_bookmarks_illust(**next)
             for idx, illust in enumerate(res_json['illusts']):
                 print(f'\033[K[+]: [%0{d_width}d/%0{d_width}d]: %s (id: %d)'
                       % (urls_len+idx+1, total, illust.title, illust.id),

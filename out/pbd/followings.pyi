@@ -1,5 +1,5 @@
 from .base import PixivBaseDownloader as PixivBaseDownloader
-from .types import UserInfo as UserInfo
+from .pixiv_types import UserInfo as UserInfo
 from pixivpy3.utils import JsonDict as JsonDict
 from typing import Any, List
 

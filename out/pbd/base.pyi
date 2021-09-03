@@ -1,4 +1,4 @@
-from .types import IllustInfo as IllustInfo
+from .pixiv_types import IllustInfo as IllustInfo
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict as JsonDict
 from typing import Any, List, Union

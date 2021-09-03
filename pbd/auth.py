@@ -7,7 +7,7 @@ from gppt import selenium as s
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict
 
-from .types import LoginCred, LoginFailed
+from .pixiv_types import LoginCred, LoginFailed
 
 
 class PixivAuth:
@@ -30,8 +30,7 @@ class PixivAuth:
 
     def __auth(self, cnt: int) -> Tuple[AppPixivAPI, JsonDict]:
         aapi: AppPixivAPI = AppPixivAPI()
-        login_cred: Optional[LoginCred] = self.read_client_cred(
-            self.auth_json_path)
+        login_cred: Optional[LoginCred] = self.read_client_cred()
 
         if login_cred is not None and cnt == 0:
             ref = self.get_refresh_token(

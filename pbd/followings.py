@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from pixivpy3.utils import JsonDict
 
 from .base import PixivBaseDownloader
-from .types import UserInfo
+from .pixiv_types import UserInfo
 
 
 class PixivFollowingsDownloader(PixivBaseDownloader):
@@ -18,7 +18,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                 res_json: JsonDict = self.aapi.user_following(
                     self.login_info.response.user.id)
             else:
-                res_json = self.aapi.user_following(**next_qs)  # type: ignore
+                res_json = self.aapi.user_following(**next_qs)
 
             next_qs = self.aapi.parse_qs(res_json.next_url)
             now_retrieved_len = len(users)

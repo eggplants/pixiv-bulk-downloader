@@ -1,4 +1,4 @@
-from .types import LoginCred as LoginCred, LoginFailed as LoginFailed
+from .pixiv_types import LoginCred as LoginCred, LoginFailed as LoginFailed
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict as JsonDict
 from typing import Any, Optional, Tuple

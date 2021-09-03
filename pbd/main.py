@@ -4,11 +4,12 @@ import os
 import sys
 
 import stdiomask
+from pixivpy3.aapi import AppPixivAPI
 
 from .auth import PixivAuth
 from .bookmarks import PixivBookmarksDownloader
 from .followings import PixivFollowingsDownloader
-from .types import LoginFailed
+from .pixiv_types import LoginFailed
 
 SAVE_DIR = os.getenv("SAVE_DIR",
                      os.path.join(os.path.expanduser("~"), 'pbd'))
@@ -20,14 +21,9 @@ SAVE_DIR = os.getenv("SAVE_DIR",
 '''
 
 
-def all_yes(f, b):
-    f.get_all_following_works()
-    print('\033[K[+]: Finish!')
-    b.get_all_bookmarked_works()
-    print('\033[K[+]: Finish!')
-
-
-def interact(f, b, aapi):
+def interact(aapi: AppPixivAPI,
+             f: PixivFollowingsDownloader,
+             b: PixivBookmarksDownloader) -> None:
     def getch() -> str:
         c = stdiomask.getch()
         print()
@@ -50,13 +46,16 @@ def interact(f, b, aapi):
 
 
 def _main() -> None:
-    aapi, login_info = PixivAuth()
+    aapi, login_info = PixivAuth().auth()
     f = PixivFollowingsDownloader(aapi, login_info, SAVE_DIR)
     b = PixivBookmarksDownloader(aapi, login_info, SAVE_DIR)
     if '-y' in sys.argv:
-        all_yes(f, b)
+        f.get_all_following_works()
+        print('\033[K[+]: Finish!')
+        b.get_all_bookmarked_works()
+        print('\033[K[+]: Finish!')
     else:
-        interact(f, b, aapi)
+        interact(aapi, f, b)
 
 
 def main() -> None:

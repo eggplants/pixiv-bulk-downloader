@@ -7,7 +7,7 @@ from gppt import selenium as s
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict
 
-from .types import IllustInfo
+from .pixiv_types import IllustInfo
 
 
 class PixivBaseDownloader:
@@ -70,7 +70,7 @@ class PixivBaseDownloader:
             links = image_data['link']
             print(f'\033[K[%0{d_width}d/%0{d_width}d]: %s (id: %d)'
                   % (idx + 1, data_len, title, id_))
-            self.__download(links, id_, title, save_path)
+            self.__download(links, title, id_, save_path)
 
             print('\033[K\033[A\033[K', end='', flush=True)
 
@@ -85,7 +85,7 @@ class PixivBaseDownloader:
                 self.aapi.download(link, path=save_path, fname=fname)
         elif type(links) is str:
             link = links
-            basename_ = link.split('/')[-1]  # type: ignore
+            basename_ = link.split('/')[-1]
             fname = '{}_{}_{}'.format(id_, title, basename_.split('_')[-1])
             print('\033[K' + fname, end="\r")
             self.aapi.download(link, path=save_path, fname=fname)
