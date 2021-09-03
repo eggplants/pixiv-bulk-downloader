@@ -39,8 +39,8 @@ class PixivAuth:
             login_info = aapi.auth(refresh_token=ref)
         elif login_cred is None or cnt > 0:
             print('[+]: ID is mail address, userid, account name.')
-            stdin_login = (stdiomask.getpass(prompt='[?]: ID: '),
-                           stdiomask.getpass(prompt='[?]: PW: '))
+            stdin_login = (stdiomask.getpass(prompt='[?]: ID: ', mask=' '),
+                           stdiomask.getpass(prompt='[?]: PW: ', mask=' '))
             print('\x1b[?25l[+]: Login...', end='\r')
             ref = self.get_refresh_token(stdin_login[0], stdin_login[1])
             login_info = aapi.auth(refresh_token=ref)
