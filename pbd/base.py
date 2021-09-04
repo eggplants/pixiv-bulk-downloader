@@ -17,10 +17,7 @@ class PixivBaseDownloader:
         self.save_dir = save_dir
 
     def refresh(self) -> None:
-        res = s.GetPixivToken.refresh(
-            refresh_token=self.aapi.refresh_token)
-        self.aapi = AppPixivAPI()
-        self.aapi.auth(refresh_token=res['refresh_token'])
+        self.aapi.auth()
 
     @staticmethod
     def rand_sleep(base: float = 0.1, rand: float = 2.5) -> None:
