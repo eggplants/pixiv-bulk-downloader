@@ -3,7 +3,6 @@ import random
 import time
 from typing import Dict, List, Optional, Union
 
-from gppt import selenium as s
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict
 
@@ -15,9 +14,6 @@ class PixivBaseDownloader:
         self.aapi = aapi
         self.login_info = login_info
         self.save_dir = save_dir
-
-    def refresh(self) -> None:
-        self.aapi.auth()
 
     @staticmethod
     def rand_sleep(base: float = 0.1, rand: float = 2.5) -> None:
@@ -40,15 +36,17 @@ class PixivBaseDownloader:
                 res_json = self.aapi.user_illusts(target_id, type='illust')
             else:
                 res_json = self.aapi.user_illusts(**next)  # type: ignore
-            err_msg = 'Error Message: invalid_grant'
-            if 'error' in res_json and err_msg in res_json['error']['message']:
-                self.refresh()
+            if 'error' in res_json \
+                    and 'invalid_grant' in res_json['error']['message']:
+                self.aapi.auth()
                 continue
             for illust in res_json['illusts']:
-                urls.append({
-                    'id': illust.id,
-                    'title': illust.title,
-                    'link': self.ext_links(illust)}
+                urls.append(
+                    {
+                        'id': illust.id,
+                        'title': illust.title,
+                        'link': self.ext_links(illust)
+                    }
                 )
             next = self.aapi.parse_qs(res_json['next_url'])
             self.rand_sleep(1.5)

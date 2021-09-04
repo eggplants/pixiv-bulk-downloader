@@ -36,7 +36,8 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
                     {
                         'id': illust.id,
                         'title': illust.title,
-                        'link': self.ext_links(illust)}
+                        'link': self.ext_links(illust)
+                    }
                 )
             next = self.aapi.parse_qs(res_json['next_url'])
             urls_len = len(urls)

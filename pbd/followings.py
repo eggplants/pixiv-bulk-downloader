@@ -42,11 +42,14 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                   % (retrieved+idx+1, following_total,
                      user_info.name, user_info.id),
                   end="\r", flush=True)
-            users.append({
-                "id": user_info.id,
-                "name": user_info.name,
-                "account": user_info.account,
-                "illusts": self.retrieve_works(user_info.id)})
+            users.append(
+                {
+                    "id": user_info.id,
+                    "name": user_info.name,
+                    "account": user_info.account,
+                    "illusts": self.retrieve_works(user_info.id)
+                }
+            )
             self.rand_sleep(1.5)
         else:
             return users
