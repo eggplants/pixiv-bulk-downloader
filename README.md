@@ -1,6 +1,6 @@
 # pixiv-bulk-downloader
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability)](https://codeclimate.com/github/eggplants/pixiv-bulk-downloader/maintainability) [![Release Package](https://github.com/eggplants/pixiv-bulk-downloader/workflows/Release%20Package/badge.svg)](https://github.com/eggplants/pixiv-bulk-downloader/actions/runs/345374681/workflow) [![PyPI version](https://badge.fury.io/py/pixiv-bulk-downloader.svg)](https://badge.fury.io/py/pixiv-bulk-downloader)
+[![PyPI version](https://badge.fury.io/py/pixiv-bulk-downloader.svg)](https://badge.fury.io/py/pixiv-bulk-downloader) [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/eggplanter/pbd)](https://hub.docker.com/r/eggplanter/pbd) [![Maintainability](https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability)](https://codeclimate.com/github/eggplants/pixiv-bulk-downloader/maintainability) [![Release Package](https://github.com/eggplants/pixiv-bulk-downloader/workflows/Release%20Package/badge.svg)](https://github.com/eggplants/pixiv-bulk-downloader/actions/runs/345374681/workflow)
 
 Pixiv Bulk Downloader
 
@@ -14,19 +14,30 @@ Pixiv Bulk Downloader
 
 ## Try
 
+### From PyPI
+
 Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
 ```bash
 # pip 3.x
-pip install pixiv-bulk-downloader
+❭ pip install pixiv-bulk-downloader
 # run
-$ pbd
+❭ pbd
 [+]: ID is mail address, userid, account name.
 [?]: ID:
 [?]: PW:
 [+]: Login...OK!
 [?]: Download all works of following? (766 artists) (n/y): 
 [?]: Download all bookmarked? (1909 works) (n/y): 
+```
+
+### From Docker
+
+```bash
+❭ dokcer pull eggplanter/pbd
+❭ docker run -it -v ~/pbd:/pbd eggplanter/pbd
+[+]: ID is mail address, userid, account name.
+...
 ```
 
 ## Capture
