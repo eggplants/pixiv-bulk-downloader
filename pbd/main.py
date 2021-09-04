@@ -37,9 +37,9 @@ def interact(aapi: AppPixivAPI,
     if getch() == 'y':
         f.get_all_following_works()
         print('\033[K[+]: Finish!')
-        print('[?]: Download all bookmarked? '
-              '({} works) (n/y): '.format(total_bookmark_len),
-              flush=True, end="")
+    print('[?]: Download all bookmarked? '
+          '({} works) (n/y): '.format(total_bookmark_len),
+          flush=True, end="")
     if getch() == 'y':
         b.get_all_bookmarked_works()
         print('\033[K[+]: Finish!')
