@@ -18,7 +18,7 @@ def parse_requires():
 
 setup(
     name='pixiv-bulk-downloader',
-    version='2.0',
+    version='2.1',
     description='Pixiv Bulk Downloader',
     description_content_type='',
     long_description=open('README.md').read(),
