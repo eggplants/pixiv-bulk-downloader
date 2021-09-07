@@ -16,3 +16,14 @@ class UserInfo(TypedDict):
     name: str
     account: str
     illusts: List[IllustInfo]
+
+class NextBookmarksRequest(TypedDict):
+    user_id: str
+    restrict: str
+    filter: str
+    max_bookmark_id: str
+
+class NextFollowingsRequest(TypedDict):
+    user_id: str
+    restrict: str
+    offset: str

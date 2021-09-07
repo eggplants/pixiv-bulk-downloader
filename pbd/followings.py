@@ -1,22 +1,22 @@
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional, cast
 
 from pixivpy3.utils import JsonDict
 
 from .base import PixivBaseDownloader
-from .pixiv_types import UserInfo
+from .pixiv_types import NextFollowingsRequest, UserInfo
 
 
 class PixivFollowingsDownloader(PixivBaseDownloader):
     def retrieve_following(self) -> List[UserInfo]:
         users: List[UserInfo] = []
-        next_qs: Optional[Dict[str, str]] = {}
+        next_qs = cast(Optional[NextFollowingsRequest], {})
         my_info = self.aapi.user_detail(self.aapi.user_id)
         total = my_info["profile"]["total_follow_users"]
         while next_qs is not None:
-            if next_qs == {}:
+            if "user_id" not in next_qs:
                 res_json: JsonDict = self.aapi.user_following(
-                    self.login_info.response.user.id)
+                    self.login_info["response"]["user"]["id"])
             else:
                 res_json = self.aapi.user_following(**next_qs)
 

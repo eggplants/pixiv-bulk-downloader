@@ -4,9 +4,9 @@ import os
 import sys
 
 import stdiomask
+from gppt import PixivAuth
 from pixivpy3.aapi import AppPixivAPI
 
-from .auth import PixivAuth
 from .bookmarks import PixivBookmarksDownloader
 from .followings import PixivFollowingsDownloader
 from .pixiv_types import LoginFailed

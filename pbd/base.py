@@ -3,6 +3,7 @@ import random
 import time
 from typing import Dict, List, Optional, Union
 
+from gppt import LoginInfo
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict
 
@@ -10,7 +11,8 @@ from .pixiv_types import IllustInfo
 
 
 class PixivBaseDownloader:
-    def __init__(self, aapi: AppPixivAPI, login_info: JsonDict, save_dir: str):
+    def __init__(self, aapi: AppPixivAPI,
+                 login_info: LoginInfo, save_dir: str):
         self.aapi = aapi
         self.login_info = login_info
         self.save_dir = save_dir
