@@ -3,7 +3,7 @@ import os
 from typing import Optional, Tuple
 
 import stdiomask
-from gppt import selenium as s
+from gppt import GetPixivToken
 from pixivpy3 import AppPixivAPI
 from pixivpy3.utils import JsonDict
 
@@ -52,8 +52,8 @@ class PixivAuth:
 
     @staticmethod
     def get_refresh_token(pixiv_id: str, pixiv_pass: str) -> str:
-        gpt = s.GetPixivToken(headless=True, user=pixiv_id, pass_=pixiv_pass)
-        res = gpt.login()
+        g = GetPixivToken()
+        res = g.login(headless=True, user=pixiv_id, pass_=pixiv_pass)
         return res["refresh_token"]
 
     def read_client_cred(self) -> Optional[LoginCred]:

@@ -1,4 +1,5 @@
 import argparse
+from .selenium import GetPixivToken as GetPixivToken
 from typing import Optional
 
 def print_auth_token_response(res: dict[str, str], json: Optional[bool] = ...) -> None: ...
