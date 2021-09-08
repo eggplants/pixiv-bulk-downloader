@@ -27,14 +27,14 @@ Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 [?]: ID:
 [?]: PW:
 [+]: Login...OK!
-[?]: Download all works of following? (766 artists) (n/y): 
-[?]: Download all bookmarked? (1909 works) (n/y): 
+[?]: Download all works of following? (766 artists) (n/y):
+[?]: Download all bookmarked? (1909 works) (n/y):
 ```
 
 ### From Docker
 
 ```bash
-❭ docker run -it -v ~/pbd:/pbd eggplanter/pbd
+❭ docker run -it -v ~/pbd:/root/pbd eggplanter/pbd
 [+]: ID is mail address, userid, account name.
 ...
 ```
