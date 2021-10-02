@@ -2,29 +2,28 @@ FROM python:3.9
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# install google chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
-    && apt-get -qq -y update \
-    && apt-get install -qq -y --no-install-recommends \
-    google-chrome-stable=94.0.4606.71-1 \
+RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -y update \
+    && apt-get install -y --no-install-recommends \
+    google-chrome-stable \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /tmp
+# install chromedriver
+RUN wget -qO /tmp/chromedriver.zip \
+    "http://chromedriver.storage.googleapis.com/$(wget -qO- chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip" \
+    && unzip -qq /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 
-RUN wget -q -O ./chromedriver.zip \
-    "http://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip" \
-    && unzip -qq ./chromedriver.zip chromedriver -d /usr/local/bin/
-
+# set display port to avoid crash
 ENV DISPLAY=:99
 
-RUN pip install -U -q --no-cache-dir pip \
-    && pip install --no-cache-dir \
-    selenium==3.141.0 \
-    pixiv-bulk-downloader==2.2
+# upgrade pip
+RUN pip install --no-cache-dir -U pip
 
-WORKDIR /
-
-RUN rm -rf /tmp
-
+# install selenium
+RUN pip install --no-cache-dir selenium pixiv-bulk-downloader
 CMD ["pbd"]
