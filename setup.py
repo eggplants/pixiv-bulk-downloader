@@ -26,7 +26,7 @@ setup(
     url='https://github.com/eggplants/pixiv-bulk-downloader',
     author='eggplants',
     packages=find_packages(),
-    python_requires='>=3.5',
+    python_requires='>=3.8',
     include_package_data=True,
     license='MIT',
     install_requires=parse_requires(),
