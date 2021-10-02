@@ -12,27 +12,23 @@ python -m twine upload --repository pypi dist/*
 
 def parse_requires():
     # type: () -> List[str]
-    d = open('requirements.txt').read()
-    return d.replace('\r', '').rstrip().split('\n')
+    d = open("requirements.txt").read()
+    return d.replace("\r", "").rstrip().split("\n")
 
 
 setup(
-    name='pixiv-bulk-downloader',
-    version='2.1',
-    description='Pixiv Bulk Downloader',
-    description_content_type='',
-    long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',
-    url='https://github.com/eggplants/pixiv-bulk-downloader',
-    author='eggplants',
+    name="pixiv-bulk-downloader",
+    version="2.2",
+    description="Pixiv Bulk Downloader",
+    description_content_type="",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    url="https://github.com/eggplants/pixiv-bulk-downloader",
+    author="eggplants",
     packages=find_packages(),
-    python_requires='>=3.8',
+    python_requires=">=3.9",
     include_package_data=True,
-    license='MIT',
+    license="MIT",
     install_requires=parse_requires(),
-    entry_points={
-        'console_scripts': [
-            'pbd=pbd.main:main'
-        ]
-    }
+    entry_points={"console_scripts": ["pbd=pbd.main:main"]},
 )
