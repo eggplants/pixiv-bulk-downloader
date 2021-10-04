@@ -19,7 +19,7 @@ Pixiv Bulk Downloader
 Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
 ```bash
-# pip 3.x
+# Python>=3.9
 ❭ pip install pixiv-bulk-downloader
 # run
 ❭ pbd
