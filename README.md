@@ -34,7 +34,7 @@ Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 ### From Docker
 
 ```bash
-❭ docker run -it -v ~/pbd:/root/pbd eggplanter/pbd
+❭ docker run -it -v ~/pbd:/root/pbd eggplanter/pbd:v2.2
 [+]: ID is mail address, userid, account name.
 ...
 ```
