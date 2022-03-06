@@ -3,7 +3,7 @@
 import os
 import sys
 
-import stdiomask  # type: ignore[import]
+import pwinput  # type: ignore[import]
 from gppt import PixivAuth
 from pixivpy3.aapi import AppPixivAPI
 
@@ -24,7 +24,7 @@ def interact(
     aapi: AppPixivAPI, f: PixivFollowingsDownloader, b: PixivBookmarksDownloader
 ) -> None:
     def getch() -> str:
-        c = stdiomask.getch()
+        c = pwinput.getch()
         print()
         return str(c)
 
