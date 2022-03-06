@@ -1,6 +1,23 @@
-from .base import PixivBaseDownloader  # noqa: F401
-from .bookmarks import PixivBookmarksDownloader  # noqa: F401
-from .followings import PixivFollowingsDownloader  # noqa: F401
-from .pixiv_types import (IllustInfo, LoginCred, LoginFailed,  # noqa: F401
-                          NextBookmarksRequest, NextFollowingsRequest,
-                          UserInfo)
+from .base import PixivBaseDownloader
+from .bookmarks import PixivBookmarksDownloader
+from .followings import PixivFollowingsDownloader
+from .pixiv_types import (
+    IllustInfo,
+    LoginCred,
+    LoginFailed,
+    NextBookmarksRequest,
+    NextFollowingsRequest,
+    UserInfo,
+)
+
+__version__ = "2.2"
+__all__ = [
+    "PixivBaseDownloader",
+    "PixivBookmarksDownloader",
+    "IllustInfo",
+    "LoginCred",
+    "LoginFailed",
+    "NextBookmarksRequest",
+    "NextFollowingsRequest",
+    "UserInfo",
+]

@@ -1,10 +1,10 @@
 import os
-from typing import List, Optional, cast
+from typing import List
 
 from pixivpy3.utils import JsonDict
 
 from .base import PixivBaseDownloader
-from .pixiv_types import IllustInfo, NextBookmarksRequest
+from .pixiv_types import IllustInfo
 
 
 class PixivBookmarksDownloader(PixivBaseDownloader):
@@ -16,7 +16,7 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
 
     def retrieve_bookmarks(self) -> List[IllustInfo]:
         urls: List[IllustInfo] = []
-        next_qs = cast(Optional[NextBookmarksRequest], {})
+        next_qs = {}  # type: ignore[var-annotated]
         target_id = self.login_info["response"]["user"]["id"]
         total = self.aapi.user_detail(self.aapi.user_id)["profile"][
             "total_illust_bookmarks_public"
@@ -42,7 +42,7 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
                         "link": self.ext_links(illust),
                     }
                 )
-            next_qs = self.aapi.parse_qs(res_json["next_url"])
+            next_qs = self.aapi.parse_qs(res_json["next_url"])  # type: ignore[assignment]
             urls_len = len(urls)
             self.rand_sleep(0.5)
         else:

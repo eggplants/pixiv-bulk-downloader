@@ -1,7 +1,7 @@
 import os
 import random
 import time
-from typing import Dict, List, Optional, Union
+from typing import List, Union
 
 from gppt import LoginInfo
 from pixivpy3 import AppPixivAPI
@@ -31,12 +31,12 @@ class PixivBaseDownloader:
 
     def retrieve_works(self, target_id: int) -> List[IllustInfo]:
         urls: List[IllustInfo] = []
-        next: Optional[Dict[str, str]] = {}
-        while next is not None:
-            if next == {}:
+        next_qs = {}  # type: ignore[var-annotated]
+        while next_qs is not None:
+            if next_qs == {}:
                 res_json = self.aapi.user_illusts(target_id, type="illust")
             else:
-                res_json = self.aapi.user_illusts(**next)  # type: ignore
+                res_json = self.aapi.user_illusts(**next_qs)
             if "error" in res_json and "invalid_grant" in res_json["error"]["message"]:
                 self.aapi.auth()
                 continue
@@ -48,7 +48,7 @@ class PixivBaseDownloader:
                         "link": self.ext_links(illust),
                     }
                 )
-            next = self.aapi.parse_qs(res_json["next_url"])
+            next_qs = self.aapi.parse_qs(res_json["next_url"])  # type: ignore[assignment]
             self.rand_sleep(1.5)
         else:
             return urls

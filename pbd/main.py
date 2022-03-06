@@ -3,7 +3,7 @@
 import os
 import sys
 
-import stdiomask
+import stdiomask  # type: ignore[import]
 from gppt import PixivAuth
 from pixivpy3.aapi import AppPixivAPI
 
@@ -26,7 +26,7 @@ def interact(
     def getch() -> str:
         c = stdiomask.getch()
         print()
-        return c
+        return str(c)
 
     my_info = aapi.user_detail(aapi.user_id)
     total_following_len = my_info["profile"]["total_follow_users"]
