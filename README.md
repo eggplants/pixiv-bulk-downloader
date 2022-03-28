@@ -34,7 +34,6 @@ python -c'import selenium;print("selenium", selenium.__version__)'  # check
 
 # webdriver
 pip install chromedriver-binary-auto
-pip install --upgrade --force-reinstall chromedriver-binary-auto
 # add this to rc or env: export PATH="$PATH:`chromedriver-path`"
 chromedriver -v  # check
 ```
