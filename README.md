@@ -18,6 +18,29 @@ Pixiv Bulk Downloader
 
 Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
+<details>
+
+<summary>Ubuntu</summary>
+
+```bash
+# google-chrome-stable
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install ./google-chrome-stable_current_amd64.deb -y
+google-chrome --version  # check
+
+# selenium
+pip install selenium
+python -c'import selenium;print("selenium", selenium.__version__)'  # check
+
+# webdriver
+pip install chromedriver-binary-auto
+pip install --upgrade --force-reinstall chromedriver-binary-auto
+# add this to rc or env: export PATH="$PATH:`chromedriver-path`"
+chromedriver -v  # check
+```
+
+</details>
+
 ```bash
 # Python>=3.9
 ❭ pip install pixiv-bulk-downloader
