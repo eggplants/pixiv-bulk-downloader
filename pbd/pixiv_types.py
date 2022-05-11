@@ -1,4 +1,6 @@
-from typing import List, TypedDict, Union
+from __future__ import annotations
+
+from typing import TypedDict
 
 
 class LoginFailed(Exception):
@@ -13,14 +15,14 @@ class LoginCred(TypedDict):
 class IllustInfo(TypedDict):
     id: int
     title: str
-    link: Union[str, List[str]]
+    link: str | list[str]
 
 
 class UserInfo(TypedDict):
     id: int
     name: str
     account: str
-    illusts: List[IllustInfo]
+    illusts: list[IllustInfo]
 
 
 class NextBookmarksRequest(TypedDict):

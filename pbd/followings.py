@@ -1,15 +1,17 @@
-import os
-from typing import Any, List
+from __future__ import annotations
 
-from pixivpy3.utils import JsonDict
+import os
+from typing import Any
+
+from pixivpy3.utils import JsonDict  # type: ignore[import]
 
 from .base import PixivBaseDownloader
 from .pixiv_types import UserInfo
 
 
 class PixivFollowingsDownloader(PixivBaseDownloader):
-    def retrieve_following(self) -> List[UserInfo]:
-        users: List[UserInfo] = []
+    def retrieve_following(self) -> list[UserInfo]:
+        users: list[UserInfo] = []
         next_qs = {}  # type: ignore[var-annotated]
         my_info = self.aapi.user_detail(self.aapi.user_id)
         total = my_info["profile"]["total_follow_users"]
@@ -21,7 +23,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
             else:
                 res_json = self.aapi.user_following(**next_qs)
 
-            next_qs = self.aapi.parse_qs(res_json.next_url)  # type: ignore[assignment]
+            next_qs = self.aapi.parse_qs(res_json.next_url)
             now_retrieved_len = len(users)
             users.extend(
                 self.extract_artist_info(
@@ -34,8 +36,8 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
 
     def extract_artist_info(
         self, user_previews: Any, following_total: int, retrieved: int
-    ) -> List[Any]:
-        users: List[Any] = []
+    ) -> list[Any]:
+        users: list[Any] = []
         d_width = len(str(following_total))
         if user_previews is None:
             print("\n[!]Warning: artist info seems to be empty.")
@@ -61,7 +63,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
             return users
 
     def get_all_following_works(self) -> None:
-        print("[+]: Fetching infomation of works of following artists...")
+        print("[+]: Fetching information of works of following artists...")
         following_data = self.retrieve_following()
         print("[+]: Downloading works of following artists...")
         following_len = len(following_data)

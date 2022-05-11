@@ -14,6 +14,7 @@ __version__ = "2.4"
 __all__ = [
     "PixivBaseDownloader",
     "PixivBookmarksDownloader",
+    "PixivFollowingsDownloader",
     "IllustInfo",
     "LoginCred",
     "LoginFailed",

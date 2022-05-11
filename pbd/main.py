@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+from __future__ import annotations
 
 import os
 import sys
 
 import pwinput  # type: ignore[import]
 from gppt import PixivAuth
-from pixivpy3.aapi import AppPixivAPI
+from pixivpy3.aapi import AppPixivAPI  # type: ignore[import]
 
 from .bookmarks import PixivBookmarksDownloader
 from .followings import PixivFollowingsDownloader

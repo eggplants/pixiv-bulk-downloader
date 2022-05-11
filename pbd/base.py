@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import os
 import random
 import time
-from typing import List, Union
 
 from gppt import LoginInfo
-from pixivpy3 import AppPixivAPI
-from pixivpy3.utils import JsonDict
+from pixivpy3 import AppPixivAPI  # type: ignore[import]
+from pixivpy3.utils import JsonDict  # type: ignore[import]
 
 from .pixiv_types import IllustInfo
 
@@ -21,16 +22,16 @@ class PixivBaseDownloader:
         time.sleep(base + rand * random.random())
 
     @staticmethod
-    def ext_links(illust: JsonDict) -> Union[List[str], str]:
-        links: List[str] = [page.image_urls.original for page in illust.meta_pages]
+    def ext_links(illust: JsonDict) -> list[str] | str:
+        links: list[str] = [page.image_urls.original for page in illust.meta_pages]
         link: str = illust.meta_single_page.get(
             "original_image_url", illust.image_urls.large
         )
 
         return links if links != [] else link
 
-    def retrieve_works(self, target_id: int) -> List[IllustInfo]:
-        urls: List[IllustInfo] = []
+    def retrieve_works(self, target_id: int) -> list[IllustInfo]:
+        urls: list[IllustInfo] = []
         next_qs = {}  # type: ignore[var-annotated]
         while next_qs is not None:
             if next_qs == {}:
@@ -48,12 +49,12 @@ class PixivBaseDownloader:
                         "link": self.ext_links(illust),
                     }
                 )
-            next_qs = self.aapi.parse_qs(res_json["next_url"])  # type: ignore[assignment]
+            next_qs = self.aapi.parse_qs(res_json["next_url"])
             self.rand_sleep(1.5)
         else:
             return urls
 
-    def download(self, data: List[IllustInfo], save_path: str) -> None:
+    def download(self, data: list[IllustInfo], save_path: str) -> None:
         os.makedirs(save_path, exist_ok=True)
         data_len = len(data)
         d_width = len(str(data_len))
@@ -69,7 +70,7 @@ class PixivBaseDownloader:
             print("\033[K\033[A\033[K", end="", flush=True)
 
     def __download(
-        self, links: Union[str, List[str]], title: str, id_: int, save_path: str
+        self, links: str | list[str], title: str, id_: int, save_path: str
     ) -> None:
         if type(links) is list:
             for link in links:
