@@ -4,10 +4,6 @@
   https://badge.fury.io/py/pixiv-bulk-downloader.svg
   )](
   https://badge.fury.io/py/pixiv-bulk-downloader
-) [![Docker Image Size (latest by date)](
-  https://img.shields.io/docker/image-size/eggplanter/pbd
-  )](
-  https://hub.docker.com/r/eggplanter/pbd
 ) [![Maintainability](
   https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability
   )](https://codeclimate.com/github/eggplants/pixiv-bulk-downloader/maintainability
@@ -72,7 +68,7 @@ chromedriver -v  # check
 ### From Docker
 
 ```bash
-❭ docker run -it -v ~/pbd:/root/pbd eggplanter/pbd:v2.2
+❭ docker run -it -v ~/pbd:/root/pbd ghcr.io/eggplants/pixiv-bulk-downloader
 [+]: ID is mail address, userid, account name.
 ...
 ```
