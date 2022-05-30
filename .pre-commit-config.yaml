@@ -47,7 +47,7 @@ repos:
         additional_dependencies:
           - types-setuptools
           - gppt
-          # - ...
+          - pixivpy3
         files: ^pbd/
         args: [--strict]
   - repo: https://github.com/crate-ci/typos
