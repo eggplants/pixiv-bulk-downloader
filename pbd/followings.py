@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from pixivpy3.utils import JsonDict  # type: ignore[import]
+from pixivpy3.utils import JsonDict
 
 from .base import PixivBaseDownloader
 from .pixiv_types import UserInfo
@@ -12,7 +12,7 @@ from .pixiv_types import UserInfo
 class PixivFollowingsDownloader(PixivBaseDownloader):
     def retrieve_following(self) -> list[UserInfo]:
         users: list[UserInfo] = []
-        next_qs = {}  # type: ignore[var-annotated]
+        next_qs: dict[str, Any] | None = {}
         my_info = self.aapi.user_detail(self.aapi.user_id)
         total = my_info["profile"]["total_follow_users"]
         while next_qs is not None:

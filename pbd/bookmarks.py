@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
-from pixivpy3.utils import JsonDict  # type: ignore[import]
+from pixivpy3.utils import JsonDict
 
 from .base import PixivBaseDownloader
 from .pixiv_types import IllustInfo
@@ -17,7 +18,7 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
 
     def retrieve_bookmarks(self) -> list[IllustInfo]:
         urls: list[IllustInfo] = []
-        next_qs = {}  # type: ignore[var-annotated]
+        next_qs: dict[str, Any] | None = {}
         target_id = self.login_info["response"]["user"]["id"]
         total = self.aapi.user_detail(self.aapi.user_id)["profile"][
             "total_illust_bookmarks_public"

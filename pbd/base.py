@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 import random
 import time
+from typing import Any
 
 from gppt import LoginInfo
-from pixivpy3 import AppPixivAPI  # type: ignore[import]
-from pixivpy3.utils import JsonDict  # type: ignore[import]
+from pixivpy3 import AppPixivAPI
+from pixivpy3.utils import JsonDict
 
 from .pixiv_types import IllustInfo
 
@@ -32,7 +33,7 @@ class PixivBaseDownloader:
 
     def retrieve_works(self, target_id: int) -> list[IllustInfo]:
         urls: list[IllustInfo] = []
-        next_qs = {}  # type: ignore[var-annotated]
+        next_qs: dict[str, Any] | None = {}
         while next_qs is not None:
             if next_qs == {}:
                 res_json = self.aapi.user_illusts(target_id, type="illust")
