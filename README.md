@@ -30,8 +30,11 @@ Pixiv Bulk Downloader
 
 ```shellsession
 $ docker run -it -v ~/pbd:/root/pbd ghcr.io/eggplants/pixiv-bulk-downloader
-[+]: ID is mail address, userid, account name.
-...
+[?]: ID:
+[?]: PW:
+[+]: Login...OK!
+[?]: Download all works of following? (766 artists) (n/y):
+[?]: Download all bookmarked? (1909 works) (n/y):
 ```
 
 ### From PyPI
@@ -63,14 +66,11 @@ chromedriver -v  # check
 ```shellsession
 # Python>=3.9
 $ pip install pixiv-bulk-downloader
-# run
+
 $ pbd
 [+]: ID is mail address, userid, account name.
 [?]: ID:
-[?]: PW:
-[+]: Login...OK!
-[?]: Download all works of following? (766 artists) (n/y):
-[?]: Download all bookmarked? (1909 works) (n/y):
+...
 ```
 
 ## Capture
