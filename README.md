@@ -26,6 +26,14 @@ Pixiv Bulk Downloader
 
 ## Try
 
+### From Docker (recommended)
+
+```shellsession
+$ docker run -it -v ~/pbd:/root/pbd ghcr.io/eggplants/pixiv-bulk-downloader
+[+]: ID is mail address, userid, account name.
+...
+```
+
 ### From PyPI
 
 Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
@@ -52,25 +60,17 @@ chromedriver -v  # check
 
 </details>
 
-```bash
+```shellsession
 # Python>=3.9
-❭ pip install pixiv-bulk-downloader
+$ pip install pixiv-bulk-downloader
 # run
-❭ pbd
+$ pbd
 [+]: ID is mail address, userid, account name.
 [?]: ID:
 [?]: PW:
 [+]: Login...OK!
 [?]: Download all works of following? (766 artists) (n/y):
 [?]: Download all bookmarked? (1909 works) (n/y):
-```
-
-### From Docker
-
-```bash
-❭ docker run -it -v ~/pbd:/root/pbd ghcr.io/eggplants/pixiv-bulk-downloader
-[+]: ID is mail address, userid, account name.
-...
 ```
 
 ## Capture
