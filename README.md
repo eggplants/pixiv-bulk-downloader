@@ -13,7 +13,6 @@
   https://results.pre-commit.ci/latest/github/eggplants/pixiv-bulk-downloader/main
 )
 
-
 Pixiv Bulk Downloader
 
 ## Feature

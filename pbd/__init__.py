@@ -10,7 +10,7 @@ from .pixiv_types import (
     UserInfo,
 )
 
-__version__ = "2.7.1"
+__version__ = "2.8.0"
 __all__ = [
     "PixivBaseDownloader",
     "PixivBookmarksDownloader",
