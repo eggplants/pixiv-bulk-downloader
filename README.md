@@ -1,16 +1,16 @@
 # pixiv-bulk-downloader
 
 [![PyPI version](
-  https://badge.fury.io/py/pixiv-bulk-downloader.svg
+  <https://badge.fury.io/py/pixiv-bulk-downloader.svg>
   )](
-  https://badge.fury.io/py/pixiv-bulk-downloader
+  <https://badge.fury.io/py/pixiv-bulk-downloader>
 ) [![Maintainability](
-  https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability
+  <https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability>
   )](https://codeclimate.com/github/eggplants/pixiv-bulk-downloader/maintainability
 ) [![pre-commit.ci status](
-  https://results.pre-commit.ci/badge/github/eggplants/pixiv-bulk-downloader/main.svg
+  <https://results.pre-commit.ci/badge/github/eggplants/pixiv-bulk-downloader/main.svg>
   )](
-  https://results.pre-commit.ci/latest/github/eggplants/pixiv-bulk-downloader/main
+  <https://results.pre-commit.ci/latest/github/eggplants/pixiv-bulk-downloader/main>
 )
 
 Pixiv Bulk Downloader
