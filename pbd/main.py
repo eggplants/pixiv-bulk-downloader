@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sys
 
-import pwinput  # type: ignore[import]
+import pwinput  # type: ignore[import-untyped]
 from gppt import PixivAuth
 from pixivpy3.aapi import AppPixivAPI
 
