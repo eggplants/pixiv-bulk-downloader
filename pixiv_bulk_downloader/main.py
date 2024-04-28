@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pwinput  # type: ignore[import-untyped]
 from gppt import PixivAuth
-from pixivpy3.aapi import AppPixivAPI
 
 from .bookmarks import PixivBookmarksDownloader
 from .followings import PixivFollowingsDownloader
-from .pixiv_types import LoginFailed
+from .pixiv_types import LoginFailedError
 
-SAVE_DIR = os.getenv("SAVE_DIR", os.path.join(os.path.expanduser("~"), "pbd"))
+if TYPE_CHECKING:
+    from pixivpy3.aapi import AppPixivAPI
+
+SAVE_DIR = Path(os.getenv("SAVE_DIR", Path.home() / "pbd"))
 """client.json
 {
   'pixiv_id' : '<change this>',
@@ -21,7 +25,9 @@ SAVE_DIR = os.getenv("SAVE_DIR", os.path.join(os.path.expanduser("~"), "pbd"))
 
 
 def interact(
-    aapi: AppPixivAPI, f: PixivFollowingsDownloader, b: PixivBookmarksDownloader
+    aapi: AppPixivAPI,
+    f: PixivFollowingsDownloader,
+    b: PixivBookmarksDownloader,
 ) -> None:
     def getch() -> str:
         c = pwinput.getch()
@@ -33,7 +39,7 @@ def interact(
     total_bookmark_len = my_info["profile"]["total_illust_bookmarks_public"]
     print(
         "[?]: Download all works of following? "
-        "({} artists) (n/y): ".format(total_following_len),
+        f"({total_following_len} artists) (n/y): ",
         flush=True,
         end="",
     )
@@ -41,8 +47,7 @@ def interact(
         f.get_all_following_works()
         print("\033[K[+]: Finish!")
     print(
-        "[?]: Download all bookmarked? "
-        "({} works) (n/y): ".format(total_bookmark_len),
+        "[?]: Download all bookmarked? " f"({total_bookmark_len} works) (n/y): ",
         flush=True,
         end="",
     )
@@ -67,8 +72,8 @@ def _main() -> None:
 def main() -> None:
     try:
         _main()
-    except (KeyError, LoginFailed):
-        print("\n[!]: Request limit seem to be exceeded. " "Try again later.")
+    except (KeyError, LoginFailedError):
+        print("\n[!]: Request limit seem to be exceeded. Try again later.")
     except KeyboardInterrupt:
         print("\n[!]: SIGINT")
     finally:

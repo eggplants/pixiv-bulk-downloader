@@ -4,7 +4,7 @@ from .followings import PixivFollowingsDownloader
 from .pixiv_types import (
     IllustInfo,
     LoginCred,
-    LoginFailed,
+    LoginFailedError,
     NextBookmarksRequest,
     NextFollowingsRequest,
     UserInfo,
@@ -17,7 +17,7 @@ __all__ = [
     "PixivFollowingsDownloader",
     "IllustInfo",
     "LoginCred",
-    "LoginFailed",
+    "LoginFailedError",
     "NextBookmarksRequest",
     "NextFollowingsRequest",
     "UserInfo",

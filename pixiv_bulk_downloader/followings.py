@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import os
-from typing import Any
-
-from pixivpy3.utils import JsonDict
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from .base import PixivBaseDownloader
-from .pixiv_types import UserInfo
+
+if TYPE_CHECKING:
+    from pixivpy3.utils import JsonDict
+
+    from .pixiv_types import UserInfo
 
 
 class PixivFollowingsDownloader(PixivBaseDownloader):
@@ -18,7 +20,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
         while next_qs is not None:
             if "user_id" not in next_qs:
                 res_json: JsonDict = self.aapi.user_following(
-                    self.login_info["response"]["user"]["id"]
+                    self.login_info["response"]["user"]["id"],
                 )
             else:
                 res_json = self.aapi.user_following(**next_qs)
@@ -27,15 +29,20 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
             now_retrieved_len = len(users)
             users.extend(
                 self.extract_artist_info(
-                    res_json.user_previews, total, now_retrieved_len
-                )
+                    res_json.user_previews,
+                    total,
+                    now_retrieved_len,
+                ),
             )
             self.rand_sleep(1.5)
 
         return users
 
     def extract_artist_info(
-        self, user_previews: Any, following_total: int, retrieved: int
+        self,
+        user_previews: Any,  # noqa: ANN401
+        following_total: int,
+        retrieved: int,
     ) -> list[Any]:
         users: list[Any] = []
         d_width = len(str(following_total))
@@ -56,11 +63,10 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                     "name": user_info.name,
                     "account": user_info.account,
                     "illusts": self.retrieve_works(user_info.id),
-                }
+                },
             )
             self.rand_sleep(1.5)
-        else:
-            return users
+        return users
 
     def get_all_following_works(self) -> None:
         print("[+]: Fetching information of works of following artists...")
@@ -70,14 +76,16 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
         d_width = len(str(following_len))
         for idx, author_data in enumerate(following_data):
             dirname = "{}_{}_{}".format(
-                author_data["id"], author_data["name"], author_data["account"]
+                author_data["id"],
+                author_data["name"],
+                author_data["account"],
             ).replace("/", "／")
             print(
                 f"\033[K[Artist][%0{d_width}d/%0{d_width}d]: %s"
-                % (idx + 1, following_len, dirname)
+                % (idx + 1, following_len, dirname),
             )
             self.download(
                 author_data["illusts"],
-                os.path.join(self.save_dir, "following", dirname),
+                Path(self.save_dir) / "following" / dirname,
             )
             print("\033[K\033[A\033[K", end="", flush=True)

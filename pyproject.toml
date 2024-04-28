@@ -47,13 +47,17 @@ target-version = ["py312"]
 select = ["ALL"]
 ignore = [
   "D",
-  "D211", # No blank lines allowed before class docstring
-  "D213", # Multi-line docstring summary should start at the second line
+  "D211",   # No blank lines allowed before class docstring
+  "D213",   # Multi-line docstring summary should start at the second line
+  "ISC001", # Implicitly concatenated string literals on one line
+  "COM812", # Trailing comma missing
 ]
+allowed-confusables = ["／"]
 
 [tool.ruff.lint.per-file-ignores]
-"main.py" = [
-  "T201", # `print` found
+"*.py" = [
+  "T201",   # `print` found
+  "ANN101", # Missing type annotation for `self` in method
 ]
 "tests/*.py" = [
   "D",

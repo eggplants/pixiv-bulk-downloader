@@ -40,9 +40,11 @@ $ docker run -it -v ~/pbd:/root/pbd ghcr.io/eggplants/pixiv-bulk-downloader
 
 Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
 
+<!-- markdownlint-disable MD033 -->
 <details>
 
 <summary>Ubuntu</summary>
+<!-- markdownlint-enable MD033 -->
 
 ```bash
 # google-chrome-stable
@@ -60,7 +62,9 @@ pip install chromedriver-binary-auto
 chromedriver -v  # check
 ```
 
+<!-- markdownlint-disable MD033 -->
 </details>
+<!-- markdownlint-enable MD033 -->
 
 ```shellsession
 # Python>=3.9

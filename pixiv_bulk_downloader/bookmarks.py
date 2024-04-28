@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import os
-from typing import Any
-
-from pixivpy3.utils import JsonDict
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from .base import PixivBaseDownloader
-from .pixiv_types import IllustInfo
+
+if TYPE_CHECKING:
+    from pixivpy3.utils import JsonDict
+
+    from .pixiv_types import IllustInfo
 
 
 class PixivBookmarksDownloader(PixivBaseDownloader):
@@ -14,7 +16,7 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
         print("[+]: Fetching information of bookmarked works...")
         bookmarked_data = self.retrieve_bookmarks()
         print("\n[+]: Downloading bookmarked works...")
-        self.download(bookmarked_data, os.path.join(self.save_dir, "bookmarks"))
+        self.download(bookmarked_data, Path(self.save_dir) / "bookmarks")
 
     def retrieve_bookmarks(self) -> list[IllustInfo]:
         urls: list[IllustInfo] = []
@@ -42,10 +44,9 @@ class PixivBookmarksDownloader(PixivBaseDownloader):
                         "id": illust.id,
                         "title": illust.title,
                         "link": self.ext_links(illust),
-                    }
+                    },
                 )
             next_qs = self.aapi.parse_qs(res_json["next_url"])
             urls_len = len(urls)
             self.rand_sleep(0.5)
-        else:
-            return urls
+        return urls
