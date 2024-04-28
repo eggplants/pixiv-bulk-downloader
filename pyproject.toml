@@ -1,0 +1,90 @@
+[tool.poetry]
+name = "pixiv_bulk_downloader"
+version = "0.1.2"
+description = "Pixiv Bulk Downloader for bookmarks and works of following authors"
+authors = ["eggplants <w10776e8w@yahoo.co.jp>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/eggplants/pixiv-bulk-downloader"
+keywords = [
+  "downloader",
+  "cli",
+  "commandline-tool",
+  "pixivpy",
+]
+classifiers = [
+  "Environment :: Console",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pixivpy3 = "^3.7.5"
+gppt = "^4.1.0"
+pwinput = "^1.0.3"
+
+[tool.poetry.group.dev.dependencies]
+taskipy = "^1.12.2"
+pre-commit = "^3.7.0"
+black = "^24.3.0"
+ruff = "^0.3.4"
+mypy = "^1.9.0"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = [
+  "poetry-core",
+]
+
+[tool.poetry.scripts]
+pbd = "pixiv_bulk_downloader.main:main"
+
+[tool.black]
+target-version = ["py312"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "D",
+  "D211", # No blank lines allowed before class docstring
+  "D213", # Multi-line docstring summary should start at the second line
+]
+
+[tool.ruff.lint.per-file-ignores]
+"main.py" = [
+  "T201", # `print` found
+]
+"tests/*.py" = [
+  "D",
+  "S101", # Use of assert detected
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+# much harder
+# disallow_any_decorated = true
+# disallow_any_explicit = true
+# disallow_any_expr = true
+disallow_any_unimported = true
+implicit_optional = false      # for mypy<1.0
+strict_concatenate = true
+warn_unreachable = true
+
+# message
+pretty = true
+show_column_numbers = true
+show_error_context = true
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+
+[tool.taskipy.tasks]
+lint = "pre-commit run -a"
+profile = "python -m cProfile"
