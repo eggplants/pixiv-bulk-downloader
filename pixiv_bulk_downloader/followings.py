@@ -34,7 +34,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                     now_retrieved_len,
                 ),
             )
-            self.rand_sleep(1.5)
+            self.rand_sleep(5.0)
 
         return users
 
