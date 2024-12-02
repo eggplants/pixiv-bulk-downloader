@@ -12,13 +12,13 @@ from .pixiv_types import (
 
 __version__ = "3.0.0"
 __all__ = [
-    "PixivBaseDownloader",
-    "PixivBookmarksDownloader",
-    "PixivFollowingsDownloader",
     "IllustInfo",
     "LoginCred",
     "LoginFailedError",
     "NextBookmarksRequest",
     "NextFollowingsRequest",
+    "PixivBaseDownloader",
+    "PixivBookmarksDownloader",
+    "PixivFollowingsDownloader",
     "UserInfo",
 ]
