@@ -47,7 +47,7 @@ def interact(
         f.get_all_following_works()
         print("\033[K[+]: Finish!")
     print(
-        "[?]: Download all bookmarked? " f"({total_bookmark_len} works) (n/y): ",
+        f"[?]: Download all bookmarked? ({total_bookmark_len} works) (n/y): ",
         flush=True,
         end="",
     )

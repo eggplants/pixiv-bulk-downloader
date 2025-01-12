@@ -16,7 +16,10 @@ if TYPE_CHECKING:
 
 class PixivBaseDownloader:
     def __init__(
-        self, aapi: AppPixivAPI, login_info: LoginInfo, save_dir: Path
+        self,
+        aapi: AppPixivAPI,
+        login_info: LoginInfo,
+        save_dir: Path,
     ) -> None:
         self.aapi = aapi
         self.login_info = login_info

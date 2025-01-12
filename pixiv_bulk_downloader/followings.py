@@ -34,7 +34,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                     now_retrieved_len,
                 ),
             )
-            self.rand_sleep(5.0)
+            self.rand_sleep(30.0)
 
         return users
 
@@ -65,7 +65,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                     "illusts": self.retrieve_works(user_info.id),
                 },
             )
-            self.rand_sleep(1.5)
+            self.rand_sleep(30.0)
         return users
 
     def get_all_following_works(self) -> None:

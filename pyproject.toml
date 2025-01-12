@@ -1,36 +1,47 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = [
-  "poetry-core",
+  "poetry-core>=2",
 ]
 
-[tool.poetry]
-name = "pixiv_bulk_downloader"
+[project]
+name = "pixiv-bulk-downloader"
 version = "3.0.0"
 description = "Pixiv Bulk Downloader for bookmarks and works of following authors"
-authors = [
-  "eggplants <w10776e8w@yahoo.co.jp>",
-]
-license = "MIT"
 readme = "README.md"
-repository = "https://github.com/eggplants/pixiv-bulk-downloader"
 keywords = [
-  "downloader",
   "cli",
   "commandline-tool",
+  "downloader",
   "pixivpy",
 ]
+license = { text = "MIT" }
+authors = [
+  { name = "eggplants", email = "w10776e8w@yahoo.co.jp" },
+]
+requires-python = ">=3.9,<4"
 classifiers = [
   "Environment :: Console",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
 ]
+dependencies = [
+  "gppt>=4.1,<5",
+  "pixivpy3>=3.7.5,<4",
+  "pwinput>=1.0.3,<2",
+]
+urls.Repository = "https://github.com/eggplants/pixiv-bulk-downloader"
+scripts.pbd = "pixiv_bulk_downloader.main:main"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-pixivpy3 = "^3.7.5"
-gppt = "^4.1.0"
-pwinput = "^1.0.3"
+[tool.poetry]
+requires-poetry = ">=2.0"
+packages = [
+  { include = "pixiv_bulk_downloader" },
+]
 
 [tool.poetry.group.dev.dependencies]
 taskipy = "^1.12.2"
@@ -39,8 +50,8 @@ black = "^24.3.0"
 ruff = ">=0.4.2,<0.7.0"
 mypy = "^1.9.0"
 
-[tool.poetry.scripts]
-pbd = "pixiv_bulk_downloader.main:main"
+[tool.poetry.requires-plugins]
+poetry-plugin-shell = ">=1.0"
 
 [tool.black]
 target-version = [
@@ -52,18 +63,12 @@ lint.select = [
   "ALL",
 ]
 lint.ignore = [
-  "COM812", # Trailing comma missing
   "D",
-  "D211",   # No blank lines allowed before class docstring
-  "D213",   # Multi-line docstring summary should start at the second line
-  "ISC001", # Implicitly concatenated string literals on one line
 ]
 lint.per-file-ignores."*.py" = [
-  "ANN101", # Missing type annotation for `self` in method
-  "T201",   # `print` found
+  "T201", # `print` found
 ]
 lint.per-file-ignores."tests/*.py" = [
-  "D",
   "S101", # Use of assert detected
 ]
 lint.allowed-confusables = [
