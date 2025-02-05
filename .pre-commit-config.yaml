@@ -2,7 +2,7 @@ ci:
   autoupdate_schedule: monthly
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-added-large-files
     args: [--maxkb=2000]
@@ -26,24 +26,24 @@ repos:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
 - repo: https://github.com/tox-dev/pyproject-fmt
-  rev: 2.2.1
+  rev: v2.5.0
   hooks:
   - id: pyproject-fmt
 - repo: https://github.com/python-poetry/poetry
-  rev: 2.0.0
+  rev: 2.0.1
   hooks:
   - id: poetry-check
 - repo: https://github.com/psf/black
-  rev: 24.8.0
+  rev: 25.1.0
   hooks:
   - id: black
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.6.3
+  rev: v0.9.4
   hooks:
   - id: ruff
     args: [--fix]
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.11.2
+  rev: v1.14.1
   hooks:
   - id: mypy
     files: ^pixiv_bulk_downloader/
@@ -53,7 +53,7 @@ repos:
     - gppt
     - pixivpy3
 - repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.41.0
+  rev: v0.44.0
   hooks:
   - id: markdownlint-fix
     exclude: ^.github/PULL_REQUEST_TEMPLATE.md
