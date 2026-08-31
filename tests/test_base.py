@@ -3,7 +3,11 @@ from __future__ import annotations
 import pytest
 from conftest import Attr, FakeAPI, illust, make_client
 
+from pixiv_bulk_downloader import base as base_module
 from pixiv_bulk_downloader.base import PixivAPIError, PixivBaseDownloader
+
+# The autouse fixture below replaces the method, so the real one is kept here.
+REAL_RAND_SLEEP = PixivBaseDownloader.rand_sleep
 
 
 @pytest.fixture(autouse=True)
@@ -182,3 +186,27 @@ def test_download_keeps_a_slash_out_of_the_file_name(tmp_path):
     dl.download([{"id": 9, "title": "a/b", "links": ["https://i.pximg.net/9_p0.png"]}], tmp_path / "out")
 
     assert api.downloaded[0][2] == "9_a／b_p0.png"
+
+
+def test_rand_sleep_counts_a_long_wait_down(capsys, monkeypatch):
+    monkeypatch.setattr(base_module.random, "random", lambda: 0.0)
+    slept = []
+    monkeypatch.setattr(base_module.time, "sleep", slept.append)
+
+    REAL_RAND_SLEEP(30.0, 0.0)
+
+    assert slept == [1.0] * 30
+    out = capsys.readouterr().out
+    assert "[+]: zzz... (1/30)" in out
+    assert "[+]: zzz... (30/30)" in out
+
+
+def test_rand_sleep_stays_quiet_for_a_short_wait(capsys, monkeypatch):
+    monkeypatch.setattr(base_module.random, "random", lambda: 0.0)
+    slept = []
+    monkeypatch.setattr(base_module.time, "sleep", slept.append)
+
+    REAL_RAND_SLEEP(1.5, 0.0)
+
+    assert slept == [1.5]
+    assert "zzz" not in capsys.readouterr().out

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 import time
 from typing import TYPE_CHECKING, Any
@@ -20,6 +21,9 @@ if TYPE_CHECKING:
 
 WORKS_PAGE_INTERVAL = 1.5
 """Seconds to wait between pages of one artist's works."""
+
+COUNTDOWN_THRESHOLD = 5.0
+"""A sleep at least this long counts itself down instead of looking like a hang."""
 
 
 class PixivAPIError(RuntimeError):
@@ -41,8 +45,21 @@ class PixivBaseDownloader:
 
     @staticmethod
     def rand_sleep(base: float = 0.1, rand: float = 2.5) -> None:
-        """Sleep for `base` seconds plus up to `rand` more, to stay under the rate limit."""
-        time.sleep(base + rand * random.random())  # noqa: S311
+        """Sleep for `base` seconds plus up to `rand` more, to stay under the rate limit.
+
+        A wait of at least `COUNTDOWN_THRESHOLD` seconds -- the one between
+        artists is half a minute -- ticks a `zzz... (n/total)` line once a
+        second so the run does not look stuck.
+        """
+        duration = base + rand * random.random()  # noqa: S311
+        if duration < COUNTDOWN_THRESHOLD:
+            time.sleep(duration)
+            return
+        ticks = math.ceil(duration)
+        for tick in range(1, ticks + 1):
+            console.status(f"[+]: zzz... ({tick}/{ticks})")
+            time.sleep(min(1.0, duration - (tick - 1)))
+        console.clear_line()
 
     @staticmethod
     def ext_links(illust: JsonDict) -> list[str]:
