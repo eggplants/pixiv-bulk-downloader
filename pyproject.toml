@@ -31,7 +31,7 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-  "gppt>=4.1,<5",
+  "gppt>=4.1.1,<5",
   "pixivpy3>=3.7.5,<4",
   "pwinput>=1.0.3,<2",
 ]
