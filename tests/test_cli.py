@@ -15,7 +15,7 @@ def logged_in(monkeypatch):
     """Replace the login with a client whose downloads are recorded."""
     api = FakeAPI(detail={"profile": {"total_follow_users": 3, "total_illust_bookmarks_public": 5}})
     client = make_client(api)
-    seen = {"downloads": []}
+    seen = {"downloads": [], "limits": []}
 
     def fake_login(profile, **kwargs):
         seen["profile"] = profile
@@ -26,8 +26,9 @@ def logged_in(monkeypatch):
         def __init__(self, _client, save_dir):
             self.save_dir = save_dir
 
-        def download_all(self):
+        def download_all(self, limit=None):
             seen["downloads"].append((type(self).__name__, self.save_dir))
+            seen["limits"].append(limit)
 
     monkeypatch.setattr(cli_module, "login", fake_login)
     monkeypatch.setattr(cli_module, "PixivFollowingsDownloader", type("Following", (Recorder,), {}))
@@ -50,6 +51,7 @@ def test_defaults_are_filled_in_without_a_subcommand():
     assert parsed.headless is True
     assert parsed.force is False
     assert parsed.save_dir == cli_module.DEFAULT_SAVE_DIR
+    assert parsed.limit is None
 
 
 def test_options_may_come_before_the_subcommand(tmp_path):
@@ -127,3 +129,49 @@ def test_an_interrupt_is_reported_not_raised(monkeypatch, capsys):
 
     assert main([]) == 1
     assert "SIGINT" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("args", [["f", "-l", "10"], ["f", "--limit", "10"], ["-l", "10", "f"]])
+def test_limit_is_accepted_on_either_side_of_the_subcommand(args):
+    assert parse_args(args).limit == 10
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "many"])
+def test_limit_has_to_be_a_positive_integer(value, capsys):
+    with pytest.raises(SystemExit):
+        parse_args(["f", "-l", value])
+    assert "--limit" in capsys.readouterr().err
+
+
+def test_limit_reaches_the_following_downloader(logged_in, tmp_path):
+    assert main(["f", "-o", str(tmp_path), "-l", "3"]) == 0
+    assert logged_in["limits"] == [3]
+
+
+def test_without_a_limit_the_following_downloader_gets_none(logged_in, tmp_path):
+    assert main(["f", "-o", str(tmp_path)]) == 0
+    assert logged_in["limits"] == [None]
+
+
+@pytest.mark.parametrize("args", [["b", "-l", "10"], ["-l", "10", "b"]])
+def test_the_bookmarked_command_takes_a_limit_too(args):
+    assert parse_args(args).limit == 10
+
+
+def test_limit_reaches_the_bookmarks_downloader(logged_in, tmp_path):
+    assert main(["b", "-o", str(tmp_path), "-l", "3"]) == 0
+    assert logged_in["limits"] == [3]
+
+
+def test_a_bare_run_passes_the_limit_on_to_both_downloads(logged_in, tmp_path):
+    assert main(["-y", "-l", "4", "-o", str(tmp_path)]) == 0
+    assert logged_in["limits"] == [4, 4]
+
+
+def test_the_prompts_mention_the_limit(monkeypatch, logged_in, tmp_path):
+    asked = []
+    monkeypatch.setattr("builtins.input", lambda prompt: asked.append(prompt) or "n")
+
+    assert main(["-l", "4", "-o", str(tmp_path)]) == 0
+    assert "4 of 3 artists" in asked[0]
+    assert "4 of 5 works" in asked[1]

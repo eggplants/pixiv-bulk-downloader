@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 from . import console
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
     from pathlib import Path
 
     from pixivpy3 import AppPixivAPI
@@ -143,23 +143,53 @@ class PixivBaseDownloader:
                 console.status(f"{progress} - {len(works)}{suffix} works")
         return works
 
-    def download(self, works: list[IllustInfo], save_path: Path) -> None:
+    def download(
+        self,
+        works: Iterable[IllustInfo],
+        save_path: Path,
+        *,
+        total: int | None = None,
+        limit: int | None = None,
+    ) -> int:
         """Download every page of every work into one directory.
 
         Files already on disk are left alone, so an interrupted run can simply
         be started again.
 
+        `works` is consumed lazily, so a listing that is still being paged stops
+        being paged as soon as `limit` is reached.
+
         Args:
             works: What `retrieve_works` (or a bookmark listing) collected.
             save_path: Directory to write into; created if missing.
+            total: Denominator of the progress counter. Needed when `works` is
+                an iterator; a list counts itself.
+            limit: Stop after this many works have actually yielded a file. The
+                pages of the work that reaches the limit are all downloaded.
+
+        Returns:
+            How many works something was actually fetched for; the ones already
+            on disk are not counted, so a zero means there was nothing new to
+            download.
         """
+        if total is None:
+            works = list(works)
+            total = len(works)
         save_path.mkdir(parents=True, exist_ok=True)
-        total = len(works)
+        fetched = 0
         for index, work in enumerate(works, start=1):
             title = work["title"].replace("/", "／")
+            new = False
             for link in work["links"]:
                 # `123_title_p0.png`: the page suffix is the tail of the original name.
                 fname = f"{work['id']}_{title}_{link.split('/')[-1].split('_')[-1]}"
                 console.status(f"[+]: {console.counter(index, total)}: {title} - {fname}")
-                self.aapi.download(link, path=str(save_path), fname=fname)
+                # `AppPixivAPI.download` answers False for a file it left alone.
+                new |= bool(self.aapi.download(link, path=str(save_path), fname=fname))
+            if not new:
+                continue
+            fetched += 1
+            if limit is not None and fetched >= limit:
+                break
         console.clear_line()
+        return fetched

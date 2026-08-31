@@ -116,6 +116,66 @@ def test_download_reports_each_file_on_one_line(tmp_path, capsys):
     assert "[+]: [1/1]: title - 9_title_p0.png" in capsys.readouterr().out
 
 
+def works(*ids):
+    return [{"id": i, "title": str(i), "links": [f"https://i.pximg.net/{i}_p0.png"]} for i in ids]
+
+
+def test_download_counts_a_multi_page_work_once(tmp_path):
+    dl, api = downloader([], tmp_path)
+    api.existing.add("9_title_p0.png")
+    work = [{"id": 9, "title": "title", "links": ["https://i.pximg.net/9_p0.png", "https://i.pximg.net/9_p1.png"]}]
+
+    assert dl.download(work, tmp_path / "out") == 1
+
+
+def test_download_counts_nothing_when_every_file_is_already_there(tmp_path):
+    dl, api = downloader([], tmp_path)
+    api.existing.add("9_title_p0.png")
+    work = [{"id": 9, "title": "title", "links": ["https://i.pximg.net/9_p0.png"]}]
+
+    assert dl.download(work, tmp_path / "out") == 0
+
+
+def test_download_stops_at_the_limit(tmp_path):
+    dl, api = downloader([], tmp_path)
+
+    assert dl.download(works(1, 2, 3), tmp_path / "out", limit=2) == 2
+    assert [fname for _, _, fname in api.downloaded] == ["1_1_p0.png", "2_2_p0.png"]
+
+
+def test_download_spends_the_limit_only_on_works_it_fetched(tmp_path):
+    dl, api = downloader([], tmp_path)
+    api.existing.update({"1_1_p0.png", "2_2_p0.png"})
+
+    assert dl.download(works(1, 2, 3), tmp_path / "out", limit=1) == 1
+    assert [fname for _, _, fname in api.downloaded] == ["1_1_p0.png", "2_2_p0.png", "3_3_p0.png"]
+
+
+def test_download_leaves_an_iterator_unconsumed_past_the_limit(tmp_path):
+    dl, _ = downloader([], tmp_path)
+    listing = iter(works(1, 2, 3))
+
+    dl.download(listing, tmp_path / "out", total=3, limit=1)
+
+    assert list(listing) == works(2, 3)
+
+
+def test_download_counts_a_list_for_its_own_progress_total(tmp_path, capsys):
+    dl, _ = downloader([], tmp_path)
+
+    dl.download(works(1, 2), tmp_path / "out")
+
+    assert "[2/2]" in capsys.readouterr().out
+
+
+def test_download_takes_the_progress_total_of_an_iterator_from_the_caller(tmp_path, capsys):
+    dl, _ = downloader([], tmp_path)
+
+    dl.download(iter(works(1)), tmp_path / "out", total=42)
+
+    assert "[01/42]" in capsys.readouterr().out
+
+
 def test_download_keeps_a_slash_out_of_the_file_name(tmp_path):
     dl, api = downloader([], tmp_path)
 

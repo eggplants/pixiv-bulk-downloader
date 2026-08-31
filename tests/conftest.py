@@ -13,13 +13,15 @@ from pixiv_bulk_downloader.auth import PixivClient
 class FakeAPI:
     """Stands in for `AppPixivAPI`, recording what the downloaders ask of it."""
 
-    def __init__(self, pages=None, detail=None):
+    def __init__(self, pages=None, detail=None, existing=()):
         self.pages = list(pages or [])
         self.detail = detail or {"profile": {"total_follow_users": 0, "total_illust_bookmarks_public": 0}}
         self.auth = None
         self.user_id = 0
         self.downloaded = []
         self.calls = []
+        # File names the real `AppPixivAPI.download` would leave alone, and so answer False for.
+        self.existing = set(existing)
 
     def set_auth(self, access_token, refresh_token=None):
         self.auth = (access_token, refresh_token)
@@ -47,7 +49,7 @@ class FakeAPI:
 
     def download(self, url, path=None, fname=None, **kwargs):
         self.downloaded.append((url, path, fname))
-        return True
+        return fname not in self.existing
 
 
 class Attr(dict):

@@ -24,15 +24,29 @@ the crawl is this slow.
 class PixivFollowingsDownloader(PixivBaseDownloader):
     """Saves each followed artist's works into `<save_dir>/following/<id>_<name>_<account>`."""
 
-    def download_all(self) -> None:
-        """Download each followed artist's works as soon as that artist has been listed."""
+    def download_all(self, limit: int | None = None) -> None:
+        """Download each followed artist's works as soon as that artist has been listed.
+
+        Args:
+            limit: Stop once this many artists have actually yielded a file.
+                Artists whose works are already all on disk do not count, so
+                running with a limit again picks up where the last run stopped.
+                None downloads the whole following list.
+        """
         console.info("Downloading works of following artists...")
         total = self.following_count()
+        fetched_from = 0
         for index, artist in enumerate(self.retrieve_following(total), start=1):
             dirname = f"{artist['id']}_{artist['name']}_{artist['account']}".replace("/", "／")
             console.info(f"[Artist]{console.counter(index, total)}: {dirname}")
-            self.download(artist["illusts"], self.save_dir / "following" / dirname)
+            fetched = self.download(artist["illusts"], self.save_dir / "following" / dirname)
             console.drop_line()
+            if not fetched:
+                continue
+            fetched_from += 1
+            if limit is not None and fetched_from >= limit:
+                console.info(f"Downloaded from {fetched_from} artists, stopping at the limit.")
+                break
 
     def following_count(self) -> int:
         """How many artists the logged-in account follows.

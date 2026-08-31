@@ -112,3 +112,57 @@ def test_retrieve_works_reports_a_bare_count_without_a_work_total(tmp_path, caps
     list(dl.retrieve_following(1))
 
     assert "1 works" in capsys.readouterr().out
+
+
+def three_artists(tmp_path, existing=()):
+    """A following list of three artists with one work each."""
+    api = FakeAPI(
+        pages=[
+            Attr(
+                user_previews=[artist(7, "one", "one_acc"), artist(8, "two", "two_acc"), artist(9, "three", "3_acc")],
+                next_url=None,
+            ),
+            Attr(illusts=[illust(1, "a")], next_url=None),
+            Attr(illusts=[illust(2, "b")], next_url=None),
+            Attr(illusts=[illust(3, "c")], next_url=None),
+        ],
+        detail={"profile": {"total_follow_users": 3}},
+        existing=existing,
+    )
+    return PixivFollowingsDownloader(make_client(api), tmp_path), api
+
+
+def test_download_all_without_a_limit_walks_the_whole_following_list(tmp_path):
+    dl, api = three_artists(tmp_path)
+
+    dl.download_all()
+
+    assert [fname for _, _, fname in api.downloaded] == ["1_a_p0.png", "2_b_p0.png", "3_c_p0.png"]
+
+
+def test_download_all_stops_once_the_limit_of_artists_has_been_downloaded(tmp_path):
+    dl, api = three_artists(tmp_path)
+
+    dl.download_all(2)
+
+    assert [fname for _, _, fname in api.downloaded] == ["1_a_p0.png", "2_b_p0.png"]
+    # The third artist's works were never even listed.
+    assert len(api.pages) == 1
+
+
+def test_download_all_does_not_count_an_artist_whose_works_are_all_on_disk(tmp_path):
+    dl, api = three_artists(tmp_path, existing=["1_a_p0.png", "2_b_p0.png"])
+
+    dl.download_all(1)
+
+    # The first two artists had nothing new, so the limit is only spent on the third.
+    assert [fname for _, _, fname in api.downloaded] == ["1_a_p0.png", "2_b_p0.png", "3_c_p0.png"]
+    assert api.pages == []
+
+
+def test_download_all_says_it_stopped_at_the_limit(tmp_path, capsys):
+    dl, _ = three_artists(tmp_path)
+
+    dl.download_all(1)
+
+    assert "stopping at the limit" in capsys.readouterr().out

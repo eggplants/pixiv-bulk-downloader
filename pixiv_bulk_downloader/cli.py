@@ -4,7 +4,14 @@ from __future__ import annotations
 
 import os
 import shutil
-from argparse import SUPPRESS, ArgumentDefaultsHelpFormatter, ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from argparse import (
+    SUPPRESS,
+    ArgumentDefaultsHelpFormatter,
+    ArgumentParser,
+    ArgumentTypeError,
+    Namespace,
+    RawDescriptionHelpFormatter,
+)
 from pathlib import Path
 
 from gppt import LoginError, TokenError
@@ -32,11 +39,57 @@ _DEFAULTS = {
     "headless": True,
     "force": False,
     "save_dir": DEFAULT_SAVE_DIR,
+    "limit": None,
 }
 
 
 class HelpFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
     """Show argument defaults while keeping the description's own line breaks."""
+
+
+def _positive_int(value: str) -> int:
+    """Parse an argument that has to be an artist count.
+
+    Args:
+        value: The raw command line argument.
+
+    Returns:
+        The parsed count.
+
+    Raises:
+        ArgumentTypeError: If it is not a whole number of at least one.
+    """
+    try:
+        count = int(value)
+    except ValueError:
+        msg = f"{value!r} is not an integer"
+        raise ArgumentTypeError(msg) from None
+    if count < 1:
+        msg = f"{value!r} is not a positive integer"
+        raise ArgumentTypeError(msg)
+    return count
+
+
+def _limit_parser(unit: str) -> ArgumentParser:
+    """Build the `--limit` option.
+
+    Args:
+        unit: What the limit counts, for the help text: the following crawl
+            stops after so many artists, the bookmark one after so many works.
+
+    Returns:
+        A parser meant to be passed as a `parents=` entry.
+    """
+    parser = ArgumentParser(add_help=False)
+    parser.add_argument(
+        "-l",
+        "--limit",
+        type=_positive_int,
+        metavar="N",
+        default=SUPPRESS,
+        help=f"stop after N {unit} have actually had something to download (default: no limit)",
+    )
+    return parser
 
 
 def _shared_parser(*, save_dir: bool) -> ArgumentParser:
@@ -124,7 +177,7 @@ def parse_args(args: list[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         prog="pbd",
         description=DESCRIPTION,
-        parents=[downloading],
+        parents=[downloading, _limit_parser("artists or works")],
         formatter_class=formatter,
     )
     parser.add_argument("-y", "--yes", action="store_true", help="answer yes to every prompt")
@@ -141,14 +194,14 @@ def parse_args(args: list[str] | None = None) -> Namespace:
     sub.add_parser(
         "following",
         aliases=["f"],
-        parents=[downloading],
+        parents=[downloading, _limit_parser("artists")],
         formatter_class=formatter,
         help="download the works of every artist you follow",
     )
     sub.add_parser(
         "bookmarked",
         aliases=["b"],
-        parents=[downloading],
+        parents=[downloading, _limit_parser("works")],
         formatter_class=formatter,
         help="download every work you have bookmarked",
     )
@@ -196,24 +249,37 @@ def _run(parsed: Namespace) -> int:
     if parsed.command in {"login", "l"}:
         return 0
     if parsed.command in {"following", "f"}:
-        PixivFollowingsDownloader(client, parsed.save_dir).download_all()
+        PixivFollowingsDownloader(client, parsed.save_dir).download_all(parsed.limit)
     elif parsed.command in {"bookmarked", "b"}:
-        PixivBookmarksDownloader(client, parsed.save_dir).download_all()
+        PixivBookmarksDownloader(client, parsed.save_dir).download_all(parsed.limit)
     else:
-        _interact(client, parsed.save_dir, yes=parsed.yes)
+        _interact(client, parsed.save_dir, yes=parsed.yes, limit=parsed.limit)
     console.info("Finish!")
     return 0
 
 
-def _interact(client: PixivClient, save_dir: Path, *, yes: bool) -> None:
+def _interact(client: PixivClient, save_dir: Path, *, yes: bool, limit: int | None = None) -> None:
     """Ask what to download, showing how much of it there is."""
     profile = client.aapi.user_detail(client.user_id)["profile"]
-    following = f"Download all works of following? ({profile['total_follow_users']} artists)"
-    bookmarked = f"Download all bookmarked works? ({profile['total_illust_bookmarks_public']} works)"
-    if yes or console.ask(following):
-        PixivFollowingsDownloader(client, save_dir).download_all()
-    if yes or console.ask(bookmarked):
-        PixivBookmarksDownloader(client, save_dir).download_all()
+    artists = _capped(profile["total_follow_users"], limit)
+    works = _capped(profile["total_illust_bookmarks_public"], limit)
+    if yes or console.ask(f"Download all works of following? ({artists} artists)"):
+        PixivFollowingsDownloader(client, save_dir).download_all(limit)
+    if yes or console.ask(f"Download all bookmarked works? ({works} works)"):
+        PixivBookmarksDownloader(client, save_dir).download_all(limit)
+
+
+def _capped(total: int, limit: int | None) -> str:
+    """Render how much of `total` a prompt is about to offer to download.
+
+    Args:
+        total: How many there are in all.
+        limit: The `--limit`, if there is one.
+
+    Returns:
+        The total on its own, or `N of total` when a limit caps it.
+    """
+    return str(total) if limit is None else f"{limit} of {total}"
 
 
 if __name__ == "__main__":
