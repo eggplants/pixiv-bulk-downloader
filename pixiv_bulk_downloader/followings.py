@@ -1,91 +1,66 @@
+"""Download every work posted by the artists the logged-in account follows."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
+from . import console
 from .base import PixivBaseDownloader
 
 if TYPE_CHECKING:
-    from pixivpy3.utils import JsonDict
+    from .models import ArtistInfo
 
-    from .pixiv_types import UserInfo
+FOLLOWING_INTERVAL = 30.0
+"""Seconds to wait between artists.
+
+Walking a whole following list means one request per artist plus one per page
+of their works, which trips pixiv's rate limit long before it finishes unless
+the crawl is this slow.
+"""
 
 
 class PixivFollowingsDownloader(PixivBaseDownloader):
-    def retrieve_following(self) -> list[UserInfo]:
-        users: list[UserInfo] = []
-        next_qs: dict[str, Any] | None = {}
-        my_info = self.aapi.user_detail(self.aapi.user_id)
-        total = my_info["profile"]["total_follow_users"]
-        while next_qs is not None:
-            if "user_id" not in next_qs:
-                res_json: JsonDict = self.aapi.user_following(
-                    self.login_info["response"]["user"]["id"],
+    """Saves each followed artist's works into `<save_dir>/following/<id>_<name>_<account>`."""
+
+    def download_all(self) -> None:
+        """Fetch the works of every followed artist, then download them."""
+        console.info("Fetching information of works of following artists...")
+        artists = self.retrieve_following()
+        console.info("Downloading works of following artists...")
+        total = len(artists)
+        for index, artist in enumerate(artists, start=1):
+            dirname = f"{artist['id']}_{artist['name']}_{artist['account']}".replace("/", "／")
+            console.info(f"[Artist]{console.counter(index, total)}: {dirname}")
+            self.download(artist["illusts"], self.save_dir / "following" / dirname)
+            console.drop_line()
+
+    def retrieve_following(self) -> list[ArtistInfo]:
+        """List every followed artist together with all of their illustrations.
+
+        Returns:
+            One entry per followed artist.
+        """
+        total = self.aapi.user_detail(self.client.user_id)["profile"]["total_follow_users"]
+        artists: list[ArtistInfo] = []
+        for page in self.paginate(
+            self.aapi.user_following,
+            interval=FOLLOWING_INTERVAL,
+            user_id=self.client.user_id,
+        ):
+            previews = page.get("user_previews")
+            if not previews:
+                console.warn("Artist info seems to be empty.")
+                continue
+            for preview in previews:
+                user = preview.user
+                console.status(f"[+]: {console.counter(len(artists) + 1, total)}: {user.name} (id: {user.id})")
+                artists.append(
+                    {
+                        "id": user.id,
+                        "name": user.name,
+                        "account": user.account,
+                        "illusts": self.retrieve_works(user.id),
+                    },
                 )
-            else:
-                res_json = self.aapi.user_following(**next_qs)
-
-            next_qs = self.aapi.parse_qs(res_json.next_url)
-            now_retrieved_len = len(users)
-            users.extend(
-                self.extract_artist_info(
-                    res_json.user_previews,
-                    total,
-                    now_retrieved_len,
-                ),
-            )
-            self.rand_sleep(30.0)
-
-        return users
-
-    def extract_artist_info(
-        self,
-        user_previews: Any,  # noqa: ANN401
-        following_total: int,
-        retrieved: int,
-    ) -> list[Any]:
-        users: list[Any] = []
-        d_width = len(str(following_total))
-        if user_previews is None:
-            print("\n[!]Warning: artist info seems to be empty.")
-            return users
-        for idx, user in enumerate(user_previews):
-            user_info: JsonDict = user.user
-            print(
-                f"\033[K[+]: [%0{d_width}d/%0{d_width}d]: %s (id: %d)"
-                % (retrieved + idx + 1, following_total, user_info.name, user_info.id),
-                end="\r",
-                flush=True,
-            )
-            users.append(
-                {
-                    "id": user_info.id,
-                    "name": user_info.name,
-                    "account": user_info.account,
-                    "illusts": self.retrieve_works(user_info.id),
-                },
-            )
-            self.rand_sleep(30.0)
-        return users
-
-    def get_all_following_works(self) -> None:
-        print("[+]: Fetching information of works of following artists...")
-        following_data = self.retrieve_following()
-        print("[+]: Downloading works of following artists...")
-        following_len = len(following_data)
-        d_width = len(str(following_len))
-        for idx, author_data in enumerate(following_data):
-            dirname = "{}_{}_{}".format(
-                author_data["id"],
-                author_data["name"],
-                author_data["account"],
-            ).replace("/", "／")
-            print(
-                f"\033[K[Artist][%0{d_width}d/%0{d_width}d]: %s"
-                % (idx + 1, following_len, dirname),
-            )
-            self.download(
-                author_data["illusts"],
-                Path(self.save_dir) / "following" / dirname,
-            )
-            print("\033[K\033[A\033[K", end="", flush=True)
+                self.rand_sleep(FOLLOWING_INTERVAL)
+        return artists

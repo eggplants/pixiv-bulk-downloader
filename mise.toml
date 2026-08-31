@@ -1,0 +1,72 @@
+[settings]
+# Nothing newer than this is installed: a release needs to survive
+# `min_age` days of other people finding its problems first.
+minimum_release_age = "7d"
+
+[tools]
+"aqua:azu/dockerfile-pin" = "latest" # [skip ci]
+claude = "latest" # [skip ci]
+pinact = "latest" # [skip ci]
+usage = "latest" # [skip ci]
+python = "latest"
+uv = "latest"
+
+[tasks.ruff]
+description = "Run Ruff"
+run = "uv format"
+
+[tasks.pymarkdown]
+description = "Run PyMarkdownLnt"
+run = "uv run pymarkdown fix --list-files ."
+
+[tasks.ty]
+description = "Run Ty"
+run = "uvx ty check --respect-ignore-files"
+depends = ["uv-sync"]
+
+[tasks.pytest]
+description = "Run Pytest"
+run = "uv run pytest"
+
+[tasks.pytest-cov]
+description = "Run Pytest with coverage"
+run = """
+#!/usr/bin/env bash
+set -euxo pipefail
+uv run pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=pixiv_bulk_downloader tests/ | tee pytest-coverage.txt
+"""
+
+[tasks.build]
+description = "Build"
+run = "uv build"
+
+[tasks.build-binary]
+description = "Build a standalone binary with PyInstaller"
+run = "uv run --with pyinstaller pyinstaller --clean --noconfirm --distpath dist packaging/pbd.spec"
+
+[tasks.docs]
+description = "Generate documentation"
+run = "uv run pdoc pixiv_bulk_downloader -o ./docs --docformat google"
+
+[tasks.pyproject-fmt]
+description = "Run pyproject-fmt"
+run = "uv run pyproject-fmt ./pyproject.toml"
+
+[tasks.pre-commit]
+description = "Run checks on pre-commit"
+depends = ["ruff", "ty", "pymarkdown", "pyproject-fmt"]
+
+[tasks.ci]
+description = "Run CI checks"
+depends = ["pre-commit", "pytest-cov"]
+
+[tasks.pinup]
+description = "Update the pinned action and image digests"
+run = [
+  "pinact run -u --min-age 7",
+  "dockerfile-pin run -u --write --min-age 7",
+]
+
+[tasks.uv-sync]
+description = "Sync UV dependencies"
+run = "uv sync --locked"

@@ -1,24 +1,28 @@
-from .base import PixivBaseDownloader
+""".. include:: ../README.md"""  # noqa: D415
+
+from __future__ import annotations
+
+import importlib.metadata
+
+try:
+    __version__ = importlib.metadata.version(__name__)
+except importlib.metadata.PackageNotFoundError:  # pragma: no cover
+    __version__ = "0.0.0"
+
+from .auth import PixivClient, login
+from .base import PixivAPIError, PixivBaseDownloader
 from .bookmarks import PixivBookmarksDownloader
 from .followings import PixivFollowingsDownloader
-from .pixiv_types import (
-    IllustInfo,
-    LoginCred,
-    LoginFailedError,
-    NextBookmarksRequest,
-    NextFollowingsRequest,
-    UserInfo,
-)
+from .models import ArtistInfo, IllustInfo
 
-__version__ = "3.0.0"
 __all__ = [
+    "ArtistInfo",
     "IllustInfo",
-    "LoginCred",
-    "LoginFailedError",
-    "NextBookmarksRequest",
-    "NextFollowingsRequest",
+    "PixivAPIError",
     "PixivBaseDownloader",
     "PixivBookmarksDownloader",
+    "PixivClient",
     "PixivFollowingsDownloader",
-    "UserInfo",
+    "__version__",
+    "login",
 ]

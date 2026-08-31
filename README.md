@@ -1,91 +1,99 @@
 # pixiv-bulk-downloader
 
-[![PyPI version](
-  <https://badge.fury.io/py/pixiv-bulk-downloader.svg>
+[![PyPI](
+  <https://img.shields.io/pypi/v/pixiv-bulk-downloader?color=blue>
   )](
-  <https://badge.fury.io/py/pixiv-bulk-downloader>
-) [![Maintainability](
-  <https://api.codeclimate.com/v1/badges/f4083498009bd92d2d05/maintainability>
-  )](https://codeclimate.com/github/eggplants/pixiv-bulk-downloader/maintainability
-) [![pre-commit.ci status](
-  <https://results.pre-commit.ci/badge/github/eggplants/pixiv-bulk-downloader/main.svg>
+  <https://pypi.org/project/pixiv-bulk-downloader/>
+) [![CI](
+  <https://github.com/eggplants/pixiv-bulk-downloader/actions/workflows/ci.yml/badge.svg>
   )](
-  <https://results.pre-commit.ci/latest/github/eggplants/pixiv-bulk-downloader/main>
+  <https://github.com/eggplants/pixiv-bulk-downloader/actions/workflows/ci.yml>
 )
 
-Pixiv Bulk Downloader
+[![ghcr size](
+  <https://ghcr-badge.egpl.dev/eggplants/pixiv-bulk-downloader/size>
+)](
+  <https://github.com/eggplants/pixiv-bulk-downloader/pkgs/container/pixiv-bulk-downloader>
+)
 
-## Feature
+Pixiv Bulk Downloader for bookmarks and works of following authors.
 
-- Download
-  - works of following users
-    - SAVE: `$HOME/pbd/following`
-  - bookmarked works
-    - SAVE: `$HOME/pbd/bookmarks`
-
-## Try
-
-### From Docker (recommended)
-
-```shellsession
-$ docker run -it -v ~/pbd:/root/pbd ghcr.io/eggplants/pixiv-bulk-downloader
-[?]: ID:
-[?]: PW:
-[+]: Login...OK!
-[?]: Download all works of following? (766 artists) (n/y):
-[?]: Download all bookmarked? (1909 works) (n/y):
-```
-
-### From PyPI
-
-Note: _In advance, please setup google-chrome-stable + selenium + webdriver_
-
-<!-- markdownlint-disable MD033 -->
-<details>
-
-<summary>Ubuntu</summary>
-<!-- markdownlint-enable MD033 -->
+## Installation
 
 ```bash
-# google-chrome-stable
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo apt install ./google-chrome-stable_current_amd64.deb -y
-google-chrome --version  # check
+# mise via github release
+mise use -g github:eggplants/pixiv-bulk-downloader
 
-# selenium
-pip install selenium
-python -c'import selenium;print("selenium", selenium.__version__)'  # check
+# mise via pipx
+mise use -g pipx:pixiv-bulk-downloader
 
-# webdriver
-pip install chromedriver-binary-auto
-# add this to rc or env: export PATH="$PATH:`chromedriver-path`"
-chromedriver -v  # check
+# pipx
+pipx install pixiv-bulk-downloader
+
+# pip
+pip install pixiv-bulk-downloader
 ```
 
-<!-- markdownlint-disable MD033 -->
-</details>
-<!-- markdownlint-enable MD033 -->
+### Docker
+
+```bash
+docker pull ghcr.io/eggplants/pixiv-bulk-downloader
+
+# the image has no browser, so log in by pasting the code back
+docker run --rm -it -v ~/pbd:/root/pbd -v ~/.config/gppt:/root/.config/gppt \
+  ghcr.io/eggplants/pixiv-bulk-downloader --oauth
+```
+
+## Setup
+
+Logging in is delegated to [gppt](https://pypi.org/project/gppt/), which owns the
+credentials and the token cache under `~/.config/gppt/`.
+
+```bash
+# store an account: pixiv ID + password (e2e), or nothing at all (oauth)
+gppt configure
+```
+
+## CLI
 
 ```shellsession
-# Python>=3.9
-$ pip install pixiv-bulk-downloader
+$ pbd login          # or: pbd l
+[+]: Opening browser for pixiv login ...
+[+]: Logged in as: eggplant (@eggplants)
 
-$ pbd
-[+]: ID is mail address, userid, account name.
-[?]: ID:
-...
+$ pbd following      # or: pbd f -- works of every artist you follow
+$ pbd bookmarked     # or: pbd b -- everything you have bookmarked
 ```
 
-## Capture
+Run `pbd` with no subcommand to log in and then be asked what to download:
 
-![image](https://user-images.githubusercontent.com/42153744/132086056-82a4e3e8-bbdd-42bc-8296-716ce4c34edb.png)
+```shellsession
+$ pbd
+[+]: Logged in as: eggplant (@eggplants)
+[?]: Download all works of following? (766 artists) (y/N): y
+[?]: Download all bookmarked works? (1909 works) (y/N): y
+```
 
-![image](https://user-images.githubusercontent.com/42153744/132086168-ce4d8ae1-9085-4c7a-ba9f-4ae8f9a17757.png)
+Downloads land in `$SAVE_DIR` (default `~/pbd`), or wherever `-o/--save-dir`
+says:
 
-![image](https://user-images.githubusercontent.com/42153744/132086124-7a7634f9-7fe0-47b9-98b5-840716c4db34.png)
+- `<save dir>/following/<id>_<name>_<account>/` -- one directory per artist
+- `<save dir>/bookmarks/` -- every bookmarked work
 
-![image](https://user-images.githubusercontent.com/42153744/132086141-b0b82493-ed7d-44a6-80c8-dea7c47297a1.png)
+Files already on disk are skipped, so an interrupted run can just be started again.
+
+## Library
+
+```python
+from pixiv_bulk_downloader import PixivBookmarksDownloader, login
+from pathlib import Path
+
+client = login()
+PixivBookmarksDownloader(client, Path.home() / "pbd").download_all()
+```
 
 ## License
 
-MIT
+[MIT License](
+  <https://github.com/eggplants/pixiv-bulk-downloader/blob/master/LICENSE.txt>
+)

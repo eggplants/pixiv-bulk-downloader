@@ -1,0 +1,96 @@
+name: build-binaries
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_PYTHON_DOWNLOADS: automatic
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - { os: ubuntu-latest, target: linux-amd64 }
+          - { os: ubuntu-24.04-arm, target: linux-arm64 }
+          # macOS (macos-26-intel = Intel, macos-14 = Apple Silicon)
+          - { os: macos-26-intel, target: macos-amd64 }
+          - { os: macos-14, target: macos-arm64 }
+          # Windows
+          - { os: windows-latest, target: windows-amd64 }
+          - { os: windows-11-arm, target: windows-arm64 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - name: Build standalone binary
+        shell: bash
+        run: |
+          uv sync --frozen --no-default-groups
+          uv run --with pyinstaller pyinstaller --clean --noconfirm --distpath dist packaging/pbd.spec
+      - name: Smoke-test the binary
+        shell: bash
+        run: |
+          binary="dist/pbd"
+          [ -f "$binary" ] || binary="dist/pbd.exe"
+          "$binary" --version
+          "$binary" --help
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pbd-${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+
+  # PyInstaller cannot cross-compile, so the release is assembled here once every
+  # native runner has uploaded its binary. Immutable releases lock the assets of a
+  # published release, so it is created as a draft and published afterwards.
+  release:
+    name: publish release with binaries
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: artifacts
+      - name: Stage release assets
+        shell: bash
+        run: |
+          mkdir -p release
+          for dir in artifacts/*/; do
+            target="$(basename "$dir")"
+            if [ -f "${dir}pbd.exe" ]; then
+              cp "${dir}pbd.exe" "release/${target}.exe"
+            elif [ -f "${dir}pbd" ]; then
+              cp "${dir}pbd" "release/${target}"
+              chmod +x "release/${target}"
+            fi
+          done
+          ls -l release
+      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          draft: true
+          files: release/*
+          fail_on_unmatched_files: true
+      - name: Publish the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${{ github.ref_name }}" --draft=false --repo "${{ github.repository }}"

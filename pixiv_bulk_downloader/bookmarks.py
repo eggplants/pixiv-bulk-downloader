@@ -1,52 +1,43 @@
+"""Download every work the logged-in account has bookmarked publicly."""
+
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
+from . import console
 from .base import PixivBaseDownloader
 
 if TYPE_CHECKING:
-    from pixivpy3.utils import JsonDict
+    from .models import IllustInfo
 
-    from .pixiv_types import IllustInfo
+BOOKMARKS_PAGE_INTERVAL = 0.5
+"""Seconds to wait between pages of the bookmark listing."""
 
 
 class PixivBookmarksDownloader(PixivBaseDownloader):
-    def get_all_bookmarked_works(self) -> None:
-        print("[+]: Fetching information of bookmarked works...")
-        bookmarked_data = self.retrieve_bookmarks()
-        print("\n[+]: Downloading bookmarked works...")
-        self.download(bookmarked_data, Path(self.save_dir) / "bookmarks")
+    """Saves bookmarked works into `<save_dir>/bookmarks`."""
+
+    def download_all(self) -> None:
+        """Fetch the bookmark listing, then download everything in it."""
+        console.info("Fetching information of bookmarked works...")
+        works = self.retrieve_bookmarks()
+        console.info("Downloading bookmarked works...")
+        self.download(works, self.save_dir / "bookmarks")
 
     def retrieve_bookmarks(self) -> list[IllustInfo]:
-        urls: list[IllustInfo] = []
-        next_qs: dict[str, Any] | None = {}
-        target_id = self.login_info["response"]["user"]["id"]
-        total = self.aapi.user_detail(self.aapi.user_id)["profile"][
-            "total_illust_bookmarks_public"
-        ]
-        d_width = len(str(total))
-        urls_len = 0
-        while next_qs is not None:
-            if "user_id" not in next_qs:
-                res_json: JsonDict = self.aapi.user_bookmarks_illust(target_id)
-            else:
-                res_json = self.aapi.user_bookmarks_illust(**next_qs)
-            for idx, illust in enumerate(res_json["illusts"]):
-                print(
-                    f"\033[K[+]: [%0{d_width}d/%0{d_width}d]: %s (id: %d)"
-                    % (urls_len + idx + 1, total, illust.title, illust.id),
-                    end="\r",
-                    flush=True,
-                )
-                urls.append(
-                    {
-                        "id": illust.id,
-                        "title": illust.title,
-                        "link": self.ext_links(illust),
-                    },
-                )
-            next_qs = self.aapi.parse_qs(res_json["next_url"])
-            urls_len = len(urls)
-            self.rand_sleep(0.5)
-        return urls
+        """List every publicly bookmarked illustration.
+
+        Returns:
+            One entry per bookmarked illustration.
+        """
+        total = self.aapi.user_detail(self.client.user_id)["profile"]["total_illust_bookmarks_public"]
+        works: list[IllustInfo] = []
+        for page in self.paginate(
+            self.aapi.user_bookmarks_illust,
+            interval=BOOKMARKS_PAGE_INTERVAL,
+            user_id=self.client.user_id,
+        ):
+            for illust in page["illusts"]:
+                console.status(f"[+]: {console.counter(len(works) + 1, total)}: {illust.title} (id: {illust.id})")
+                works.append({"id": illust.id, "title": illust.title, "links": self.ext_links(illust)})
+        return works
