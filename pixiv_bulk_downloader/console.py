@@ -64,20 +64,3 @@ def counter(index: int, total: int) -> str:
     """
     width = len(str(total))
     return f"[{index:0{width}d}/{total:0{width}d}]"
-
-
-def ask(question: str) -> bool:
-    """Ask a yes/no question on stdin.
-
-    Args:
-        question: The question, without the trailing `(y/N)`.
-
-    Returns:
-        True only if the answer starts a `yes`; a closed stdin is a no.
-    """
-    try:
-        answer = input(f"{CLEAR_LINE}[?]: {question} (y/N): ")
-    except EOFError:
-        print()
-        return False
-    return answer.strip().lower() in {"y", "yes"}

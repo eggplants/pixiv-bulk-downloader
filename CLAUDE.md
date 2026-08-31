@@ -45,8 +45,8 @@ itself is `pixivpy3`.
   distribution metadata (`0.0.0` when running from a source tree with no tags), plus the
   public re-exports.
 - **`pixiv_bulk_downloader/cli.py`** -- argparse entry point (`pbd`) with the `login`/`l`,
-  `following`/`f` and `bookmarked`/`b` subcommands; a bare `pbd` logs in and then asks what
-  to download. `main()` takes an optional argument list so the tests can drive it without
+  `following`/`f` and `bookmarked`/`b` subcommands; a bare `pbd` just prints the help.
+  `main()` takes an optional argument list so the tests can drive it without
   touching `sys.argv`, and returns the exit code.
 - **`pixiv_bulk_downloader/auth.py`** -- `login()` wraps `gppt.get_token`, and `PixivClient`
   keeps an `AppPixivAPI` authenticated, refreshing the access token when a long run outlives

@@ -13,7 +13,7 @@ from pixiv_bulk_downloader.cli import main, parse_args
 @pytest.fixture
 def logged_in(monkeypatch):
     """Replace the login with a client whose downloads are recorded."""
-    api = FakeAPI(detail={"profile": {"total_follow_users": 3, "total_illust_bookmarks_public": 5}})
+    api = FakeAPI()
     client = make_client(api)
     seen = {"downloads": [], "limits": []}
 
@@ -88,26 +88,11 @@ def test_login_options_reach_the_login(logged_in):
     assert (logged_in["method"], logged_in["headless"], logged_in["force"]) == ("oauth", False, True)
 
 
-def test_bare_invocation_asks_before_each_download(monkeypatch, logged_in, tmp_path):
-    answers = iter(["y", "n"])
-    asked = []
-
-    def fake_input(prompt):
-        asked.append(prompt)
-        return next(answers)
-
-    monkeypatch.setattr("builtins.input", fake_input)
-
-    assert main(["-o", str(tmp_path)]) == 0
-
-    assert logged_in["downloads"] == [("Following", tmp_path)]
-    assert "3 artists" in asked[0]
-    assert "5 works" in asked[1]
-
-
-def test_yes_skips_the_prompts(logged_in, tmp_path):
-    assert main(["-y", "-o", str(tmp_path)]) == 0
-    assert logged_in["downloads"] == [("Following", tmp_path), ("Bookmarked", tmp_path)]
+def test_a_bare_invocation_prints_the_help_without_logging_in(logged_in, capsys):
+    assert main([]) == 1
+    assert "usage: pbd" in capsys.readouterr().out
+    assert "profile" not in logged_in
+    assert logged_in["downloads"] == []
 
 
 def test_a_failed_login_is_reported_not_raised(monkeypatch, capsys):
@@ -127,7 +112,7 @@ def test_an_interrupt_is_reported_not_raised(monkeypatch, capsys):
 
     monkeypatch.setattr(cli_module, "login", boom)
 
-    assert main([]) == 1
+    assert main(["login"]) == 1
     assert "SIGINT" in capsys.readouterr().err
 
 
@@ -161,17 +146,3 @@ def test_the_bookmarked_command_takes_a_limit_too(args):
 def test_limit_reaches_the_bookmarks_downloader(logged_in, tmp_path):
     assert main(["b", "-o", str(tmp_path), "-l", "3"]) == 0
     assert logged_in["limits"] == [3]
-
-
-def test_a_bare_run_passes_the_limit_on_to_both_downloads(logged_in, tmp_path):
-    assert main(["-y", "-l", "4", "-o", str(tmp_path)]) == 0
-    assert logged_in["limits"] == [4, 4]
-
-
-def test_the_prompts_mention_the_limit(monkeypatch, logged_in, tmp_path):
-    asked = []
-    monkeypatch.setattr("builtins.input", lambda prompt: asked.append(prompt) or "n")
-
-    assert main(["-l", "4", "-o", str(tmp_path)]) == 0
-    assert "4 of 3 artists" in asked[0]
-    assert "4 of 5 works" in asked[1]

@@ -18,7 +18,7 @@ from gppt import LoginError, TokenError
 from pixivpy3.utils import PixivError
 
 from . import __version__, console
-from .auth import DEFAULT_PROFILE, PixivClient, login
+from .auth import DEFAULT_PROFILE, login
 from .base import PixivAPIError
 from .bookmarks import PixivBookmarksDownloader
 from .followings import PixivFollowingsDownloader
@@ -29,7 +29,6 @@ DEFAULT_SAVE_DIR = Path(os.environ.get("SAVE_DIR") or Path.home() / "pbd")
 DESCRIPTION = """\
 Pixiv Bulk Downloader for bookmarks and works of following authors.
 
-Run without a subcommand to log in and then be asked what to download.
 Credentials and tokens are handled by gppt; `gppt configure` stores them.
 """
 
@@ -155,14 +154,11 @@ def _shared_parser(*, save_dir: bool) -> ArgumentParser:
     return parser
 
 
-def parse_args(args: list[str] | None = None) -> Namespace:
-    """Parse the command line.
-
-    Args:
-        args: Arguments to parse instead of `sys.argv[1:]`. Used by the tests.
+def _build_parser() -> ArgumentParser:
+    """Build the `pbd` parser, subcommands and all.
 
     Returns:
-        The parsed arguments, with the defaults of the shared options filled in.
+        The parser. `main` keeps it around to print the help of a bare `pbd`.
     """
     auth_only = _shared_parser(save_dir=False)
     downloading = _shared_parser(save_dir=True)
@@ -180,7 +176,6 @@ def parse_args(args: list[str] | None = None) -> Namespace:
         parents=[downloading, _limit_parser("artists or works")],
         formatter_class=formatter,
     )
-    parser.add_argument("-y", "--yes", action="store_true", help="answer yes to every prompt")
     parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
 
     sub = parser.add_subparsers(dest="command")
@@ -206,11 +201,34 @@ def parse_args(args: list[str] | None = None) -> Namespace:
         help="download every work you have bookmarked",
     )
 
-    parsed = parser.parse_args(args)
+    return parser
+
+
+def _fill_defaults(parsed: Namespace) -> Namespace:
+    """Apply the defaults the shared options suppress so `-o dir f` keeps `dir`.
+
+    Args:
+        parsed: The namespace `parse_args` produced.
+
+    Returns:
+        The same namespace, with every missing shared option filled in.
+    """
     for name, value in _DEFAULTS.items():
         if not hasattr(parsed, name):
             setattr(parsed, name, value)
     return parsed
+
+
+def parse_args(args: list[str] | None = None) -> Namespace:
+    """Parse the command line.
+
+    Args:
+        args: Arguments to parse instead of `sys.argv[1:]`. Used by the tests.
+
+    Returns:
+        The parsed arguments, with the defaults of the shared options filled in.
+    """
+    return _fill_defaults(_build_parser().parse_args(args))
 
 
 def main(args: list[str] | None = None) -> int:
@@ -222,7 +240,11 @@ def main(args: list[str] | None = None) -> int:
     Returns:
         The process exit code.
     """
-    parsed = parse_args(args)
+    parser = _build_parser()
+    parsed = _fill_defaults(parser.parse_args(args))
+    if parsed.command is None:
+        parser.print_help()
+        return 1
     try:
         return _run(parsed)
     except (LoginError, TokenError) as exc:
@@ -250,36 +272,10 @@ def _run(parsed: Namespace) -> int:
         return 0
     if parsed.command in {"following", "f"}:
         PixivFollowingsDownloader(client, parsed.save_dir).download_all(parsed.limit)
-    elif parsed.command in {"bookmarked", "b"}:
-        PixivBookmarksDownloader(client, parsed.save_dir).download_all(parsed.limit)
     else:
-        _interact(client, parsed.save_dir, yes=parsed.yes, limit=parsed.limit)
+        PixivBookmarksDownloader(client, parsed.save_dir).download_all(parsed.limit)
     console.info("Finish!")
     return 0
-
-
-def _interact(client: PixivClient, save_dir: Path, *, yes: bool, limit: int | None = None) -> None:
-    """Ask what to download, showing how much of it there is."""
-    profile = client.aapi.user_detail(client.user_id)["profile"]
-    artists = _capped(profile["total_follow_users"], limit)
-    works = _capped(profile["total_illust_bookmarks_public"], limit)
-    if yes or console.ask(f"Download all works of following? ({artists} artists)"):
-        PixivFollowingsDownloader(client, save_dir).download_all(limit)
-    if yes or console.ask(f"Download all bookmarked works? ({works} works)"):
-        PixivBookmarksDownloader(client, save_dir).download_all(limit)
-
-
-def _capped(total: int, limit: int | None) -> str:
-    """Render how much of `total` a prompt is about to offer to download.
-
-    Args:
-        total: How many there are in all.
-        limit: The `--limit`, if there is one.
-
-    Returns:
-        The total on its own, or `N of total` when a limit caps it.
-    """
-    return str(total) if limit is None else f"{limit} of {total}"
 
 
 if __name__ == "__main__":

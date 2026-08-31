@@ -41,7 +41,7 @@ docker pull ghcr.io/eggplants/pixiv-bulk-downloader
 
 # the image has no browser, so log in by pasting the code back
 docker run --rm -it -v ~/pbd:/root/pbd -v ~/.config/gppt:/root/.config/gppt \
-  ghcr.io/eggplants/pixiv-bulk-downloader --oauth
+  ghcr.io/eggplants/pixiv-bulk-downloader --oauth bookmarked
 ```
 
 ## Setup
@@ -63,15 +63,6 @@ $ pbd login          # or: pbd l
 
 $ pbd following      # or: pbd f -- works of every artist you follow
 $ pbd bookmarked     # or: pbd b -- everything you have bookmarked
-```
-
-Run `pbd` with no subcommand to log in and then be asked what to download:
-
-```shellsession
-$ pbd
-[+]: Logged in as: eggplant (@eggplants)
-[?]: Download all works of following? (766 artists) (y/N): y
-[?]: Download all bookmarked works? (1909 works) (y/N): y
 ```
 
 Downloads land in `$SAVE_DIR` (default `~/pbd`), or wherever `-o/--save-dir`

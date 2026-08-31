@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from pixiv_bulk_downloader import console
 
 
@@ -30,17 +28,3 @@ def test_clear_line_erases_without_moving_up(capsys):
 def test_counter_pads_both_numbers_to_the_total_width():
     assert console.counter(3, 100) == "[003/100]"
     assert console.counter(1, 2) == "[1/2]"
-
-
-@pytest.mark.parametrize(("answer", "expected"), [("y", True), ("Yes", True), ("n", False), ("", False)])
-def test_ask_accepts_only_a_yes(monkeypatch, answer, expected):
-    monkeypatch.setattr("builtins.input", lambda _: answer)
-    assert console.ask("go?") is expected
-
-
-def test_ask_treats_a_closed_stdin_as_no(monkeypatch):
-    def closed(_):
-        raise EOFError
-
-    monkeypatch.setattr("builtins.input", closed)
-    assert console.ask("go?") is False
