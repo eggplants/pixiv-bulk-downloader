@@ -57,7 +57,7 @@ class PixivBaseDownloader:
             return
         ticks = math.ceil(duration)
         for tick in range(1, ticks + 1):
-            console.status(f"[+]: zzz... ({tick}/{ticks})")
+            console.status(f"[+] zzz... ({tick}/{ticks})")
             time.sleep(min(1.0, duration - (tick - 1)))
         console.clear_line()
 
@@ -211,7 +211,7 @@ class PixivBaseDownloader:
             for link in work["links"]:
                 # `123_title_p0.png`: the page suffix is the tail of the original name.
                 fname = f"{work['id']}_{title}_{link.split('/')[-1].split('_')[-1]}"
-                console.status(f"[+]: {console.counter(index, total)}: {title} - {fname}")
+                console.status(f"[+] {console.counter(index, total)}: {title} - {fname}")
                 # `AppPixivAPI.download` answers False for a file it left alone.
                 new |= bool(self.aapi.download(link, path=str(save_path), fname=fname))
             if not new:

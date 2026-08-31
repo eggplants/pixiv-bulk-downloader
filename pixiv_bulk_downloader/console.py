@@ -1,7 +1,7 @@
 """Terminal output helpers.
 
 Every line the tool prints goes through here, so the ANSI escapes and the
-`[+]:` / `[!]:` prefixes live in one place instead of being spread over the
+`[+]` / `[!]` prefixes live in one place instead of being spread over the
 downloaders.
 """
 
@@ -18,12 +18,12 @@ SHOW_CURSOR = "\033[?25h"
 
 def info(message: str) -> None:
     """Print a normal progress line."""
-    print(f"{CLEAR_LINE}[+]: {message}")
+    print(f"{CLEAR_LINE}[+] {message}")
 
 
 def warn(message: str) -> None:
     """Print a problem to stderr."""
-    print(f"{CLEAR_LINE}[!]: {message}", file=sys.stderr)
+    print(f"{CLEAR_LINE}[!] {message}", file=sys.stderr)
 
 
 def status(message: str) -> None:

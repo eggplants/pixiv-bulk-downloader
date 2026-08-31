@@ -5,14 +5,14 @@ from pixiv_bulk_downloader import console
 
 def test_info_prefixes_the_line(capsys):
     console.info("hello")
-    assert capsys.readouterr().out == f"{console.CLEAR_LINE}[+]: hello\n"
+    assert capsys.readouterr().out == f"{console.CLEAR_LINE}[+] hello\n"
 
 
 def test_warn_goes_to_stderr(capsys):
     console.warn("oops")
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert captured.err == f"{console.CLEAR_LINE}[!]: oops\n"
+    assert captured.err == f"{console.CLEAR_LINE}[!] oops\n"
 
 
 def test_status_stays_on_one_line(capsys):

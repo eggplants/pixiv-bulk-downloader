@@ -117,7 +117,7 @@ def test_download_reports_each_file_on_one_line(tmp_path, capsys):
 
     dl.download(works, tmp_path / "out")
 
-    assert "[+]: [1/1]: title - 9_title_p0.png" in capsys.readouterr().out
+    assert "[+] [1/1]: title - 9_title_p0.png" in capsys.readouterr().out
 
 
 def works(*ids):
@@ -197,8 +197,8 @@ def test_rand_sleep_counts_a_long_wait_down(capsys, monkeypatch):
 
     assert slept == [1.0] * 30
     out = capsys.readouterr().out
-    assert "[+]: zzz... (1/30)" in out
-    assert "[+]: zzz... (30/30)" in out
+    assert "[+] zzz... (1/30)" in out
+    assert "[+] zzz... (30/30)" in out
 
 
 def test_rand_sleep_stays_quiet_for_a_short_wait(capsys, monkeypatch):

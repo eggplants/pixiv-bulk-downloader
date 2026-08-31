@@ -58,8 +58,8 @@ gppt configure
 
 ```shellsession
 $ pbd login          # or: pbd l
-[+]: Opening browser for pixiv login ...
-[+]: Logged in as: eggplant (@eggplants)
+[+] Opening browser for pixiv login ...
+[+] Logged in as: eggplant (@eggplants)
 
 $ pbd following      # or: pbd f -- works of every artist you follow
 $ pbd bookmarked     # or: pbd b -- everything you have bookmarked

@@ -98,7 +98,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
             for preview in previews:
                 user = preview.user
                 count += 1
-                progress = f"[+]: {console.counter(count, total)}: {user.name} (id: {user.id})"
+                progress = f"[+] {console.counter(count, total)}: {user.name} (id: {user.id})"
                 console.status(progress)
                 yield {
                     "id": user.id,
