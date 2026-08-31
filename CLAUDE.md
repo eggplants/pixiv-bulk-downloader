@@ -69,7 +69,10 @@ itself is `pixivpy3`.
 The sleeps between requests are not decoration: walking a whole following list is one request
 per artist plus one per page of their works, and pixiv rate-limits it long before it finishes.
 The intervals are module constants (`FOLLOWING_INTERVAL`, `WORKS_PAGE_INTERVAL`,
-`BOOKMARKS_PAGE_INTERVAL`); tests stub `PixivBaseDownloader.rand_sleep` out.
+`BOOKMARKS_PAGE_INTERVAL`); tests stub `PixivBaseDownloader.rand_sleep` out. `download_all`,
+not `retrieve_following`, waits out `FOLLOWING_INTERVAL` between artists, and only after one
+that actually yielded a file -- an artist with nothing new costs a single page, so a mostly
+cached run does not crawl.
 
 ## Versioning and releases
 

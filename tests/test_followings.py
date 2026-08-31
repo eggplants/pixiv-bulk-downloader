@@ -5,7 +5,7 @@ from conftest import Attr, FakeAPI, illust, make_client
 
 from pixiv_bulk_downloader.base import PixivAPIError, PixivBaseDownloader
 from pixiv_bulk_downloader.cache import CACHE_FILENAME
-from pixiv_bulk_downloader.followings import PixivFollowingsDownloader
+from pixiv_bulk_downloader.followings import FOLLOWING_INTERVAL, PixivFollowingsDownloader
 
 
 @pytest.fixture(autouse=True)
@@ -115,9 +115,9 @@ def test_retrieve_works_reports_a_bare_count_without_a_work_total(tmp_path, caps
     assert "1 works" in capsys.readouterr().out
 
 
-def three_artists(tmp_path, existing=()):
+def three_artists(tmp_path, existing=(), cls=FakeAPI):
     """A following list of three artists with one work each."""
-    api = FakeAPI(
+    api = cls(
         pages=[
             Attr(
                 user_previews=[artist(7, "one", "one_acc"), artist(8, "two", "two_acc"), artist(9, "three", "3_acc")],
@@ -167,6 +167,35 @@ def test_download_all_says_it_stopped_at_the_limit(tmp_path, capsys):
     dl.download_all(1)
 
     assert "stopping at the limit" in capsys.readouterr().out
+
+
+class FetchingAPI(FakeAPI):
+    """Records the downloads that actually fetched a file, in a shared event log."""
+
+    def __init__(self, events=None, **kwargs):
+        super().__init__(**kwargs)
+        self.events = [] if events is None else events
+
+    def download(self, url, path=None, fname=None, **kwargs):
+        new = super().download(url, path=path, fname=fname, **kwargs)
+        if new:
+            self.events.append(("fetched", fname))
+        return new
+
+
+def test_download_all_only_waits_after_an_artist_it_fetched_something_from(tmp_path, monkeypatch):
+    dl, api = three_artists(tmp_path, existing=["2_b_p0.png"], cls=FetchingAPI)
+
+    def record(base=0.1, rand=2.5):  # noqa: ARG001
+        if base == FOLLOWING_INTERVAL:
+            api.events.append(("wait",))
+
+    monkeypatch.setattr(PixivBaseDownloader, "rand_sleep", staticmethod(record))
+
+    dl.download_all()
+
+    # The second artist had nothing new, so no wait stands between the first and the third.
+    assert api.events[:3] == [("fetched", "1_a_p0.png"), ("wait",), ("fetched", "3_c_p0.png")]
 
 
 def test_the_first_run_lists_everything_and_writes_it_down(downloader, tmp_path):

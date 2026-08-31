@@ -16,11 +16,12 @@ if TYPE_CHECKING:
     from .models import ArtistInfo, IllustInfo
 
 FOLLOWING_INTERVAL = 30.0
-"""Seconds to wait between artists.
+"""Seconds to wait after an artist something was actually downloaded from.
 
 Walking a whole following list means one request per artist plus one per page
 of their works, which trips pixiv's rate limit long before it finishes unless
-the crawl is this slow.
+the crawl is this slow. An artist with nothing new costs a single page, so
+waiting after those would only make a mostly cached run crawl for no reason.
 """
 
 
@@ -41,6 +42,9 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
 
     def download_all(self, limit: int | None = None) -> None:
         """Download each followed artist's works as soon as that artist has been listed.
+
+        `FOLLOWING_INTERVAL` is waited out after an artist a file was actually
+        fetched from, so a run that finds nothing new moves on at listing speed.
 
         Args:
             limit: Stop once this many artists have actually yielded a file.
@@ -63,6 +67,7 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                 if limit is not None and fetched_from >= limit:
                     console.info(f"Downloaded from {fetched_from} artists, stopping at the limit.")
                     break
+                self.rand_sleep(FOLLOWING_INTERVAL)
 
     def following_count(self) -> int:
         """How many artists the logged-in account follows.
@@ -77,7 +82,9 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
 
         One artist is listed at a time so the caller can start downloading
         right away instead of waiting for the whole following list, which takes
-        one request per artist plus one per page of their works.
+        one request per artist plus one per page of their works. Waiting
+        between artists is left to the caller, which is the only one that knows
+        whether an artist yielded a download.
 
         Args:
             total: How many artists are expected, for the progress counter.
@@ -106,7 +113,6 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                     "account": user.account,
                     "illusts": self.cached_works(user.id, progress=progress),
                 }
-                self.rand_sleep(FOLLOWING_INTERVAL)
 
     def cached_works(self, artist_id: int, *, progress: str | None = None) -> list[IllustInfo]:
         """List one artist's works, paging only as far back as the cache reaches.
