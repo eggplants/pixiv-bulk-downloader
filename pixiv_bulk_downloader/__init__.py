@@ -12,10 +12,12 @@ except importlib.metadata.PackageNotFoundError:  # pragma: no cover
 from .auth import PixivClient, login
 from .base import PixivAPIError, PixivBaseDownloader
 from .bookmarks import PixivBookmarksDownloader
+from .cache import CACHE_FILENAME, WorkCache
 from .followings import PixivFollowingsDownloader
 from .models import ArtistInfo, IllustInfo
 
 __all__ = [
+    "CACHE_FILENAME",
     "ArtistInfo",
     "IllustInfo",
     "PixivAPIError",
@@ -23,6 +25,7 @@ __all__ = [
     "PixivBookmarksDownloader",
     "PixivClient",
     "PixivFollowingsDownloader",
+    "WorkCache",
     "__version__",
     "login",
 ]

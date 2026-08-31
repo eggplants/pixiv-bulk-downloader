@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 from . import console
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Container, Iterable, Iterator
     from pathlib import Path
 
     from pixivpy3 import AppPixivAPI
@@ -127,16 +127,26 @@ class PixivBaseDownloader:
         count = self.aapi.user_detail(target_id)["profile"].get("total_illusts")
         return None if count is None else int(count)
 
-    def retrieve_works(self, target_id: int, *, progress: str | None = None) -> list[IllustInfo]:
-        """List every illustration posted by one artist.
+    def retrieve_works(
+        self,
+        target_id: int,
+        *,
+        progress: str | None = None,
+        known: Container[int] | None = None,
+    ) -> list[IllustInfo]:
+        """List the illustrations posted by one artist.
 
         Args:
             target_id: The artist's pixiv user id.
             progress: Prefix of a transient line reporting how many works have
                 been listed so far; no line is printed when it is None.
+            known: Ids an earlier run already listed. Paging stops at the first
+                work in it: the endpoint answers newest first, so everything
+                from there on is what the earlier run saw.
 
         Returns:
-            One entry per illustration.
+            One entry per illustration, newest first -- every one of them, or
+            only the ones posted since `known` was collected.
         """
         works: list[IllustInfo] = []
         suffix = ""
@@ -153,9 +163,10 @@ class PixivBaseDownloader:
             user_id=target_id,
             type="illust",
         ):
-            works.extend(
-                {"id": illust.id, "title": illust.title, "links": self.ext_links(illust)} for illust in page["illusts"]
-            )
+            for illust in page["illusts"]:
+                if known is not None and illust.id in known:
+                    return works
+                works.append({"id": illust.id, "title": illust.title, "links": self.ext_links(illust)})
             if progress is not None:
                 console.status(f"{progress} - {len(works)}{suffix} works")
         return works

@@ -210,3 +210,22 @@ def test_rand_sleep_stays_quiet_for_a_short_wait(capsys, monkeypatch):
 
     assert slept == [1.5]
     assert "zzz" not in capsys.readouterr().out
+
+
+def test_retrieve_works_stops_at_a_work_it_already_knows(tmp_path):
+    pages = [
+        Attr(illusts=[illust(3, "c"), illust(2, "b")], next_url="https://app-api.pixiv.net/v1/user/illusts?offset=30"),
+        Attr(illusts=[illust(1, "a")], next_url=None),
+    ]
+    dl, api = downloader(pages, tmp_path)
+
+    assert dl.retrieve_works(42, known={2, 1}) == [{"id": 3, "title": "c", "links": ["https://i.pximg.net/3_p0.png"]}]
+    # The second page was never asked for.
+    assert len(api.pages) == 1
+
+
+def test_retrieve_works_walks_the_whole_listing_without_a_known_work(tmp_path):
+    pages = [Attr(illusts=[illust(2, "b"), illust(1, "a")], next_url=None)]
+    dl, _ = downloader(pages, tmp_path)
+
+    assert [work["id"] for work in dl.retrieve_works(42, known={9})] == [2, 1]

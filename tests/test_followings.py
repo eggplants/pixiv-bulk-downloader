@@ -3,7 +3,8 @@ from __future__ import annotations
 import pytest
 from conftest import Attr, FakeAPI, illust, make_client
 
-from pixiv_bulk_downloader.base import PixivBaseDownloader
+from pixiv_bulk_downloader.base import PixivAPIError, PixivBaseDownloader
+from pixiv_bulk_downloader.cache import CACHE_FILENAME
 from pixiv_bulk_downloader.followings import PixivFollowingsDownloader
 
 
@@ -166,3 +167,106 @@ def test_download_all_says_it_stopped_at_the_limit(tmp_path, capsys):
     dl.download_all(1)
 
     assert "stopping at the limit" in capsys.readouterr().out
+
+
+def test_the_first_run_lists_everything_and_writes_it_down(downloader, tmp_path):
+    dl, _ = downloader
+
+    dl.download_all()
+
+    assert dl.cache.works(7) == [{"id": 1, "title": "a", "links": ["https://i.pximg.net/1_p0.png"]}]
+
+
+def test_the_cache_lands_in_the_save_directory(downloader, tmp_path):
+    dl, _ = downloader
+
+    dl.download_all()
+
+    assert (tmp_path / CACHE_FILENAME).is_file()
+
+
+def cached_downloader(tmp_path, pages, cached):
+    """A downloader whose artist 7 has already been listed down to `cached`."""
+    api = FakeAPI(
+        pages=[Attr(user_previews=[artist(7, "one", "one_acc")], next_url=None), *pages],
+        detail={"profile": {"total_follow_users": 1}},
+    )
+    dl = PixivFollowingsDownloader(make_client(api), tmp_path)
+    dl.cache.save(7, cached)
+    return dl, api
+
+
+def work(id_, title):
+    return {"id": id_, "title": title, "links": [f"https://i.pximg.net/{id_}_p0.png"]}
+
+
+def test_a_later_run_stops_listing_at_the_newest_cached_work(tmp_path):
+    dl, api = cached_downloader(
+        tmp_path,
+        pages=[
+            Attr(
+                illusts=[illust(3, "c"), illust(2, "b")],
+                next_url="https://app-api.pixiv.net/v1/user/illusts?user_id=7&offset=30",
+            ),
+            Attr(illusts=[illust(1, "a")], next_url=None),
+        ],
+        cached=[work(2, "b"), work(1, "a")],
+    )
+
+    dl.download_all()
+
+    # The new work first, then what the cache held; the second page was never fetched.
+    assert [fname for _, _, fname in api.downloaded] == ["3_c_p0.png", "2_b_p0.png", "1_a_p0.png"]
+    assert len(api.pages) == 1
+
+
+def test_a_later_run_writes_the_new_works_in_front_of_the_cached_ones(tmp_path):
+    dl, _ = cached_downloader(
+        tmp_path,
+        pages=[Attr(illusts=[illust(3, "c"), illust(2, "b")], next_url=None)],
+        cached=[work(2, "b"), work(1, "a")],
+    )
+
+    dl.download_all()
+
+    assert dl.cache.works(7) == [work(3, "c"), work(2, "b"), work(1, "a")]
+
+
+def test_a_later_run_with_nothing_new_asks_for_one_page_only(tmp_path):
+    dl, api = cached_downloader(
+        tmp_path,
+        pages=[
+            Attr(illusts=[illust(2, "b")], next_url="https://app-api.pixiv.net/v1/user/illusts?user_id=7&offset=30")
+        ],
+        cached=[work(2, "b"), work(1, "a")],
+    )
+
+    dl.download_all()
+
+    assert [fname for _, _, fname in api.downloaded] == ["2_b_p0.png", "1_a_p0.png"]
+    assert api.pages == []
+
+
+def test_an_interrupted_listing_leaves_the_cache_as_it_was(tmp_path):
+    dl, _ = cached_downloader(
+        tmp_path,
+        pages=[Attr(error=Attr(message="Rate Limit"))],
+        cached=[work(2, "b"), work(1, "a")],
+    )
+
+    with pytest.raises(PixivAPIError, match="Rate Limit"):
+        dl.download_all()
+    assert dl.cache.works(7) == [work(2, "b"), work(1, "a")]
+
+
+def test_an_artist_the_cache_has_never_seen_is_listed_in_full(tmp_path):
+    dl, _ = cached_downloader(
+        tmp_path,
+        pages=[Attr(illusts=[illust(9, "z")], next_url=None)],
+        cached=[],
+    )
+    dl.cache.save(8, [work(1, "a")])
+
+    dl.download_all()
+
+    assert dl.cache.works(7) == [work(9, "z")]

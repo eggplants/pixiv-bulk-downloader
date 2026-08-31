@@ -55,6 +55,12 @@ itself is `pixivpy3`.
   feeding each `next_url` query string back into the API method, plus the actual downloads.
 - **`pixiv_bulk_downloader/bookmarks.py`** / **`followings.py`** -- the two concrete
   downloaders, saving into `<save dir>/bookmarks` and `<save dir>/following/<artist>`.
+- **`pixiv_bulk_downloader/cache.py`** -- `WorkCache`, the SQLite listing cache at
+  `<save dir>/pbd-cache.sqlite3`. An artist gets a row only once their listing has been
+  walked to the end, so a run that dies halfway leaves the old listing in place;
+  `PixivFollowingsDownloader.cached_works` then passes the cached ids to
+  `retrieve_works` as `known`, which stops paging at the first one -- `user_illusts`
+  answers newest first -- and prepends the fresh works to the cached ones.
 - **`pixiv_bulk_downloader/console.py`** -- every line the tool prints. The `T201`
   per-file-ignore lives here so nothing else needs one.
 - **`pixiv_bulk_downloader/models.py`** -- the `TypedDict`s the downloaders pass around.
