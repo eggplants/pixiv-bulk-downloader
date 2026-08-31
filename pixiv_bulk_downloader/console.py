@@ -31,6 +31,14 @@ def status(message: str) -> None:
     print(f"{CLEAR_LINE}{message}", end="\r", flush=True)
 
 
+def clear_line() -> None:
+    """Erase the current line, leaving the cursor at its start.
+
+    Ends a run of `status` lines so the last one does not linger.
+    """
+    print(f"{CLEAR_LINE}", end="\r", flush=True)
+
+
 def drop_line() -> None:
     """Erase the current line and the one above it, leaving the cursor there.
 

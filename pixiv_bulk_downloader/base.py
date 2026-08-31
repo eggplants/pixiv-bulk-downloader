@@ -97,25 +97,51 @@ class PixivBaseDownloader:
             next_qs = self.aapi.parse_qs(page.get("next_url"))
             self.rand_sleep(interval)
 
-    def retrieve_works(self, target_id: int) -> list[IllustInfo]:
-        """List every illustration posted by one artist.
+    def work_count(self, target_id: int) -> int | None:
+        """How many illustrations one artist has posted.
 
         Args:
             target_id: The artist's pixiv user id.
 
         Returns:
+            The count taken from the artist's profile, or None if pixiv did not
+            report one.
+        """
+        count = self.aapi.user_detail(target_id)["profile"].get("total_illusts")
+        return None if count is None else int(count)
+
+    def retrieve_works(self, target_id: int, *, progress: str | None = None) -> list[IllustInfo]:
+        """List every illustration posted by one artist.
+
+        Args:
+            target_id: The artist's pixiv user id.
+            progress: Prefix of a transient line reporting how many works have
+                been listed so far; no line is printed when it is None.
+
+        Returns:
             One entry per illustration.
         """
-        return [
-            {"id": illust.id, "title": illust.title, "links": self.ext_links(illust)}
-            for page in self.paginate(
-                self.aapi.user_illusts,
-                interval=WORKS_PAGE_INTERVAL,
-                user_id=target_id,
-                type="illust",
+        works: list[IllustInfo] = []
+        suffix = ""
+        if progress is not None:
+            # The pages themselves carry no count, so the artist's profile is
+            # the only place the `n/total` denominator can come from.
+            total = self.work_count(target_id)
+            suffix = "" if total is None else f"/{total}"
+            console.status(f"{progress} - 0{suffix} works")
+            self.rand_sleep(WORKS_PAGE_INTERVAL)
+        for page in self.paginate(
+            self.aapi.user_illusts,
+            interval=WORKS_PAGE_INTERVAL,
+            user_id=target_id,
+            type="illust",
+        ):
+            works.extend(
+                {"id": illust.id, "title": illust.title, "links": self.ext_links(illust)} for illust in page["illusts"]
             )
-            for illust in page["illusts"]
-        ]
+            if progress is not None:
+                console.status(f"{progress} - {len(works)}{suffix} works")
+        return works
 
     def download(self, works: list[IllustInfo], save_path: Path) -> None:
         """Download every page of every work into one directory.
@@ -131,10 +157,9 @@ class PixivBaseDownloader:
         total = len(works)
         for index, work in enumerate(works, start=1):
             title = work["title"].replace("/", "／")
-            console.info(f"{console.counter(index, total)}: {title} (id: {work['id']})")
             for link in work["links"]:
                 # `123_title_p0.png`: the page suffix is the tail of the original name.
                 fname = f"{work['id']}_{title}_{link.split('/')[-1].split('_')[-1]}"
-                console.status(fname)
+                console.status(f"[+]: {console.counter(index, total)}: {title} - {fname}")
                 self.aapi.download(link, path=str(save_path), fname=fname)
-            console.drop_line()
+        console.clear_line()

@@ -82,6 +82,18 @@ def test_retrieve_works_flattens_every_page(tmp_path):
     ]
 
 
+def test_work_count_reads_the_artists_profile(tmp_path):
+    dl, _ = downloader([], tmp_path, detail={"profile": {"total_illusts": 12}})
+
+    assert dl.work_count(42) == 12
+
+
+def test_work_count_is_none_without_a_reported_total(tmp_path):
+    dl, _ = downloader([], tmp_path, detail={"profile": {}})
+
+    assert dl.work_count(42) is None
+
+
 def test_download_names_each_file_after_its_work(tmp_path):
     dl, api = downloader([], tmp_path)
     works = [{"id": 9, "title": "title", "links": ["https://i.pximg.net/9_p0.png", "https://i.pximg.net/9_p1.png"]}]
@@ -93,6 +105,15 @@ def test_download_names_each_file_after_its_work(tmp_path):
         ("https://i.pximg.net/9_p0.png", str(tmp_path / "out"), "9_title_p0.png"),
         ("https://i.pximg.net/9_p1.png", str(tmp_path / "out"), "9_title_p1.png"),
     ]
+
+
+def test_download_reports_each_file_on_one_line(tmp_path, capsys):
+    dl, _ = downloader([], tmp_path)
+    works = [{"id": 9, "title": "title", "links": ["https://i.pximg.net/9_p0.png"]}]
+
+    dl.download(works, tmp_path / "out")
+
+    assert "[+]: [1/1]: title - 9_title_p0.png" in capsys.readouterr().out
 
 
 def test_download_keeps_a_slash_out_of_the_file_name(tmp_path):

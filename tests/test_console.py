@@ -22,6 +22,11 @@ def test_status_stays_on_one_line(capsys):
     assert capsys.readouterr().out.endswith("\r")
 
 
+def test_clear_line_erases_without_moving_up(capsys):
+    console.clear_line()
+    assert capsys.readouterr().out == f"{console.CLEAR_LINE}\r"
+
+
 def test_counter_pads_both_numbers_to_the_total_width():
     assert console.counter(3, 100) == "[003/100]"
     assert console.counter(1, 2) == "[1/2]"

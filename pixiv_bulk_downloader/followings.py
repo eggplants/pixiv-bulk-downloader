@@ -8,6 +8,8 @@ from . import console
 from .base import PixivBaseDownloader
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from .models import ArtistInfo
 
 FOLLOWING_INTERVAL = 30.0
@@ -23,25 +25,37 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
     """Saves each followed artist's works into `<save_dir>/following/<id>_<name>_<account>`."""
 
     def download_all(self) -> None:
-        """Fetch the works of every followed artist, then download them."""
-        console.info("Fetching information of works of following artists...")
-        artists = self.retrieve_following()
+        """Download each followed artist's works as soon as that artist has been listed."""
         console.info("Downloading works of following artists...")
-        total = len(artists)
-        for index, artist in enumerate(artists, start=1):
+        total = self.following_count()
+        for index, artist in enumerate(self.retrieve_following(total), start=1):
             dirname = f"{artist['id']}_{artist['name']}_{artist['account']}".replace("/", "／")
             console.info(f"[Artist]{console.counter(index, total)}: {dirname}")
             self.download(artist["illusts"], self.save_dir / "following" / dirname)
             console.drop_line()
 
-    def retrieve_following(self) -> list[ArtistInfo]:
-        """List every followed artist together with all of their illustrations.
+    def following_count(self) -> int:
+        """How many artists the logged-in account follows.
 
         Returns:
-            One entry per followed artist.
+            The follow count, used for the progress counters.
         """
-        total = self.aapi.user_detail(self.client.user_id)["profile"]["total_follow_users"]
-        artists: list[ArtistInfo] = []
+        return self.aapi.user_detail(self.client.user_id)["profile"]["total_follow_users"]
+
+    def retrieve_following(self, total: int) -> Iterator[ArtistInfo]:
+        """Yield every followed artist together with all of their illustrations.
+
+        One artist is listed at a time so the caller can start downloading
+        right away instead of waiting for the whole following list, which takes
+        one request per artist plus one per page of their works.
+
+        Args:
+            total: How many artists are expected, for the progress counter.
+
+        Yields:
+            One entry per followed artist, in the order pixiv lists them.
+        """
+        count = 0
         for page in self.paginate(
             self.aapi.user_following,
             interval=FOLLOWING_INTERVAL,
@@ -53,14 +67,13 @@ class PixivFollowingsDownloader(PixivBaseDownloader):
                 continue
             for preview in previews:
                 user = preview.user
-                console.status(f"[+]: {console.counter(len(artists) + 1, total)}: {user.name} (id: {user.id})")
-                artists.append(
-                    {
-                        "id": user.id,
-                        "name": user.name,
-                        "account": user.account,
-                        "illusts": self.retrieve_works(user.id),
-                    },
-                )
+                count += 1
+                progress = f"[+]: {console.counter(count, total)}: {user.name} (id: {user.id})"
+                console.status(progress)
+                yield {
+                    "id": user.id,
+                    "name": user.name,
+                    "account": user.account,
+                    "illusts": self.retrieve_works(user.id, progress=progress),
+                }
                 self.rand_sleep(FOLLOWING_INTERVAL)
-        return artists
