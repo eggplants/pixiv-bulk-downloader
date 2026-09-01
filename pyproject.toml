@@ -6,19 +6,33 @@ requires = [ "hatchling", "uv-dynamic-versioning" ]
 name = "pixiv-bulk-downloader"
 description = "Pixiv Bulk Downloader for bookmarks and works of following authors."
 readme = "README.md"
+keywords = [
+  "bookmarks",
+  "cli",
+  "downloader",
+  "illustration",
+  "pixiv",
+  "pixivpy",
+  "scraping",
+]
 license = { text = "MIT" }
 authors = [ { name = "eggplants", email = "w10776e8w@yahoo.co.jp" } ]
 requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
   "License :: OSI Approved :: MIT License",
+  "Natural Language :: Japanese",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Utilities",
   "Typing :: Typed",
 ]
 dynamic = [ "version" ]
@@ -26,6 +40,8 @@ dependencies = [
   "gppt>=5,<6",
   "pixivpy3>=3.7.5",
 ]
+urls.Documentation = "https://egpl.dev/pixiv-bulk-downloader/"
+urls.Issues = "https://github.com/eggplants/pixiv-bulk-downloader/issues"
 urls.Repository = "https://github.com/eggplants/pixiv-bulk-downloader"
 scripts.pbd = "pixiv_bulk_downloader.cli:main"
 
