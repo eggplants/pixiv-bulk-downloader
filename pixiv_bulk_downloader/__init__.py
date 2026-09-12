@@ -1,4 +1,4 @@
-""".. include:: ../README.md"""  # noqa: D415
+""".. include:: ../README.md"""
 
 from __future__ import annotations
 

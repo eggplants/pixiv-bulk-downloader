@@ -186,7 +186,7 @@ class FetchingAPI(FakeAPI):
 def test_download_all_only_waits_after_an_artist_it_fetched_something_from(tmp_path, monkeypatch):
     dl, api = three_artists(tmp_path, existing=["2_b_p0.png"], cls=FetchingAPI)
 
-    def record(base=0.1, rand=2.5):  # noqa: ARG001
+    def record(base=0.1, rand=2.5):
         if base == FOLLOWING_INTERVAL:
             api.events.append(("wait",))
 
