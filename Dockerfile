@@ -1,4 +1,4 @@
-FROM python:3.14-slim@sha256:0741d101873c12ab927e6f8653feb8862b9bd58771177acb1b885b95141f91b4 AS builder
+FROM python:3.14-slim@sha256:930e1abba7c4e8f96ed93e8012c35d174d7732752731bbd5e8e757d7ec6f3966 AS builder
 
 ARG VERSION
 ENV VERSION=${VERSION:-master}
@@ -10,7 +10,7 @@ RUN python -m venv /opt/venv
 RUN /opt/venv/bin/pip install --no-cache-dir \
     "git+https://github.com/eggplants/pixiv-bulk-downloader@${VERSION}"
 
-FROM al3xos/python-distroless:3.14-debian13@sha256:ccb9409a6513569adfda0358cbd6d89ccda0933ba807b4f0eac09e0d7f2bf749
+FROM al3xos/python-distroless:3.14-debian13@sha256:50cd18df84d641ef78a2ad67d3aa0744ba726ff3c8e401f7b8d5bf8a4587e606
 COPY --from=builder /opt/venv /opt/venv
 # Nothing in here launches a venv, so the interpreter is called directly and told
 # where the packages landed.
